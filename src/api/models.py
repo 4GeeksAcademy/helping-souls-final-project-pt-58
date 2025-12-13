@@ -36,6 +36,8 @@ class Organizer(db.Model):
     name: Mapped[str] = mapped_column(String(120), nullable=False)
     org_link: Mapped[str] = mapped_column(String(120), nullable=False)
 
+    organized_events: Mapped['Events']=relationship('Events', lazy=True, backref='organizer')
+
     def serialize(self):
         return {
             'organizerID': self.organizerID,
@@ -51,6 +53,9 @@ class Volunteer(db.Model):
     volunteerID: Mapped[int] = mapped_column(primary_key=True)
     userID: Mapped[int] = mapped_column(ForeignKey('user.userID'), nullable=False)
 
+    inscriptions: Mapped['Inscription']=relationship('Inscription', lazy=True, backref='volunteer')
+    comments: Mapped['Event_Comments']=relationship('Event_Comments', lazy=True, backref='volunteer')
+
     def serialize(self):
         return{
             'volunteerID': self.volunteerID,
@@ -62,6 +67,7 @@ class Inscription(db.Model):
 
     inscriptionID: Mapped[int]=mapped_column(primary_key=True)
     volunteerID: Mapped[int]=mapped_column(ForeignKey('volunteer.volunteerID'), nullable=False)
+    eventID: Mapped[int]=mapped_column(ForeignKey('events.eventID'), nullable=False)
     status: Mapped[str]=mapped_column(String(120), nullable=False)
 
     def serialize(self):
@@ -125,6 +131,9 @@ class Events(db.Model):
     location: Mapped[str]=mapped_column(String(200), nullable=False)
     max_volunteers: Mapped[int]=mapped_column(nullable=False)
     review: Mapped[str]=mapped_column(String(200), nullable=True)
+
+    comments: Mapped['Event_Comments']=relationship('Event_Comments', lazy=True, backref='event')
+    inscriptions: Mapped['Inscription']=relationship('Inscription', lazy=True, backref='event')
 
     def serialize(self):
         return{
