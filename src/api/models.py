@@ -1,6 +1,7 @@
 from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy import String, Boolean, ForeignKey
+from sqlalchemy import String, Boolean, ForeignKey, Date
 from sqlalchemy.orm import Mapped, mapped_column, relationship
+from datetime import date
 
 db = SQLAlchemy()
 
@@ -12,6 +13,9 @@ class User(db.Model):
     email: Mapped[str] = mapped_column(String(120), unique=True, nullable=False)
     password: Mapped[str] = mapped_column(nullable=False)
 
+    organizer: Mapped['Organizer']=relationship('Organizer', backref='user', lazy=True, uselist=False)
+    volunteer: Mapped['Volunteer']=relationship('Volunteer', backref='user', lazy=True, uselist=False)
+    interest: Mapped['Interest']=relationship('Interest', backref='user', lazy=True)
 
 
 
@@ -34,7 +38,7 @@ class Organizer(db.Model):
 
     def serialize(self):
         return {
-            'organizerIDID': self.organizerID,
+            'organizerID': self.organizerID,
             'userID': self.userID,
             'events': self.events,
             'name': self.name,
@@ -46,13 +50,11 @@ class Volunteer(db.Model):
 
     volunteerID: Mapped[int] = mapped_column(primary_key=True)
     userID: Mapped[int] = mapped_column(ForeignKey('user.userID'), nullable=False)
-    inscriptionID: Mapped[int] = mapped_column(ForeignKey('inscription.inscriptionID'), nullable=False)
 
     def serialize(self):
         return{
             'volunteerID': self.volunteerID,
             'userID': self.userID,
-            'inscriptionID': self.inscriptionID
         }
     
 class Inscription(db.Model):
@@ -74,7 +76,7 @@ class Interest(db.Model):
 
     interestID: Mapped[int]=mapped_column(primary_key=True)
     userID: Mapped[int]=mapped_column(ForeignKey('user.userID'), nullable=False)
-    fav_event: Mapped[int]=mapped_column(ForeignKey('event.eventID'), nullable=False)
+    fav_event: Mapped[int]=mapped_column(ForeignKey('events.eventID'), nullable=False)
 
     def serialize(self):
         return{
@@ -83,3 +85,56 @@ class Interest(db.Model):
             'fav_event': self.fav_event
         }
 
+class Event_Comments(db.Model):
+    __tablename__='event_comments'
+
+    commentID: Mapped[int]=mapped_column(primary_key=True)
+    volunteerID: Mapped[int]=mapped_column(ForeignKey('volunteer.volunteerID'), nullable=False)
+    eventID: Mapped[int]=mapped_column(ForeignKey('events.eventID'))
+    comments: Mapped[str]=mapped_column(String(120), nullable=False)
+
+    def serialize(self):
+        return{
+            'commentID': self.commentID,
+            'volunteerID': self.volunteerID,
+            'eventID': self.eventID,
+            'comments': self.comments
+        }
+    
+class Donations(db.Model):
+    __tablename__='donations'
+
+    donationID: Mapped[int]=mapped_column(primary_key=True)
+    amount: Mapped[int]=mapped_column(nullable=False)
+
+    def serialize(self):
+        return{
+           'donationID': self.donationID,
+            'amount': self.amount
+        }
+    
+class Events(db.Model):
+    __tablename__='events'
+
+    eventID: Mapped[int]=mapped_column(primary_key=True)
+    name: Mapped[str]=mapped_column(String(120), nullable=False)
+    organizerID: Mapped[int]=mapped_column(ForeignKey('organizer.organizerID'), nullable=False)
+    event_date: Mapped[date]=mapped_column(Date, nullable=False)
+    category: Mapped[str]=mapped_column(String(120), nullable=False)
+    description: Mapped[str]=mapped_column(String(320), nullable=False)
+    location: Mapped[str]=mapped_column(String(200), nullable=False)
+    max_volunteers: Mapped[int]=mapped_column(nullable=False)
+    review: Mapped[str]=mapped_column(String(200), nullable=True)
+
+    def serialize(self):
+        return{
+           'eventID': self.eventID,
+           'name': self.name,
+           'organizerID': self.organizerID,
+           'event_date': self.event_date,
+           'category': self.category,
+           'description': self.description,
+           'location': self.location,
+           'max_volunteers': self.max_volunteers,
+           'review': self.review 
+        }
