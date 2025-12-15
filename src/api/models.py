@@ -32,7 +32,6 @@ class Organizer(db.Model):
 
     organizerID: Mapped[int] = mapped_column(primary_key=True)
     userID: Mapped[int] = mapped_column(ForeignKey('user.userID'), nullable=False)
-    events: Mapped[str] = mapped_column(String(120), nullable=False)
     name: Mapped[str] = mapped_column(String(120), nullable=False)
     org_link: Mapped[str] = mapped_column(String(120), nullable=False)
 
