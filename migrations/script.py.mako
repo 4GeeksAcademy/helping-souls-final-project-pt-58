@@ -1,4 +1,4 @@
-"""${message}
+pipenv run downgrade base"""${message}
 
 Revision ID: ${up_revision}
 Revises: ${down_revision | comma,n}
