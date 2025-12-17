@@ -10,9 +10,10 @@ export const Navbar = () => {
     alert("Project description");
   };
 
-  const handleLogin = () => {
-    alert("Login");
-  };
+  const handleDonations
+    = () => {
+      alert("Donations");
+    };
 
   const handleCategory = (category) => {
     alert(`campaign types: ${category}`);
@@ -40,7 +41,7 @@ export const Navbar = () => {
         <div className="collapse navbar-collapse" id="navbarSupportedContent">
           <ul className="navbar-nav me-auto mb-2 mb-lg-0">
 
-            
+
             <li className="nav-item">
               <button
                 className="nav-link btn btn-Link active"
@@ -49,7 +50,7 @@ export const Navbar = () => {
                 Contacto
               </button>
             </li>
-			<li className="nav-item">
+            <li className="nav-item">
               <button
                 className="nav-link btn btn-Link active"
                 onClick={handleAboutUs}
@@ -57,7 +58,14 @@ export const Navbar = () => {
                 About Us
               </button>
             </li>
-
+            <li className="nav-item">
+              <button
+                className="nav-link btn btn-Link active"
+                onClick={handleDonations}
+              >
+                Donations
+              </button>
+            </li>
             <li className="nav-item dropdown">
               <Link
                 className="nav-link active  dropdown-toggle"
@@ -94,7 +102,7 @@ export const Navbar = () => {
                     Seniors
                   </button>
                 </li>
-				<li>
+                <li>
                   <button
                     className="dropdown-item"
                     onClick={() => handleCategory("Children")}
@@ -102,7 +110,7 @@ export const Navbar = () => {
                     Children
                   </button>
                 </li>
-				<li>
+                <li>
                   <button
                     className="dropdown-item"
                     onClick={() => handleCategory("Collection")}
@@ -113,14 +121,14 @@ export const Navbar = () => {
               </ul>
             </li>
           </ul>
-
-      
-          <button
-            className="btn btn-outline-success"
-            onClick={handleLogin}
-          >
-            Login
-          </button>
+          <div className="d-flex gap-2 ms-auto">
+            <Link to="/login" className="btn btn-outline-primary">
+              Login
+            </Link>
+            <Link to="/register" className="btn btn-primary">
+              sign up
+            </Link>
+          </div>
         </div>
       </div>
     </nav>
