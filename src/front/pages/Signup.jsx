@@ -57,7 +57,7 @@ export const Signup = () => {
 
     return (
         <div className="container mt-4">
-            <h1>Signup</h1>
+            <h1>Registrate</h1>
 
             <form onSubmit={handleSubmit}>
                 {/* Nombre */}

@@ -1,91 +1,110 @@
-import React, { useState } from "react";
+import { useContext, useState } from "react";
+import { StoreContext } from "../hooks/useGlobalReducer";
 import { useNavigate } from "react-router-dom";
 
 export const Login = () => {
-  const navigate = useNavigate();
+    const { dispatch } = useContext(StoreContext);
+    const navigate = useNavigate();
 
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [loading, setLoading] = useState(false);
+    const [email, setEmail] = useState("");
+    const [password, setPassword] = useState("");
+    const [loading, setLoading] = useState(false);
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setLoading(true);
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        setLoading(true);
 
-    try {
-      const backendUrl = import.meta.env.VITE_BACKEND_URL;
+        const backendUrl = import.meta.env.VITE_BACKEND_URL;
 
-      const response = await fetch(`${backendUrl}/api/login`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          email: email.toLowerCase(),
-          password
-        })
-      });
+        try {
+            const resp = await fetch(`${backendUrl}/api/login`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    email: email.toLowerCase(),
+                    password
+                })
+            });
 
-      const data = await response.json();
+            const data = await resp.json();
 
-      if (!response.ok) {
-        alert(data.msg || "Login fallido");
-        setLoading(false);
-        return;
-      }
+            if (!resp.ok) {
+                alert(data.msg || "Email o contraseña inválidos");
+                setLoading(false);
+                return;
+            }
 
-      // ✅ Guardar sesión
-      localStorage.setItem("token", data.token);
-      localStorage.setItem("user", JSON.stringify(data.user));
+            localStorage.setItem("token", data.token);
+            localStorage.setItem("user", JSON.stringify(data.user));
 
-      alert("Login exitoso");
-      navigate("/");
+            dispatch({
+                type: "login_success",
+                payload: {
+                    token: data.token,
+                    user: data.user
+                }
+            });
 
-    } catch (error) {
-      console.error("Login error:", error);
-      alert("Error al iniciar sesión");
-    } finally {
-      setLoading(false);
-    }
-  };
+            navigate("/");
+        } catch (error) {
+            alert("Error de conexión");
+        } finally {
+            setLoading(false);
+        }
+    };
 
-  return (
-    <div className="container mt-4">
-      <h1>Login</h1>
+    return (
+        <div className="container mt-5">
+            <div className="row justify-content-center">
+                <div className="col-md-5 col-lg-4">
+                    <div className="card shadow-sm">
+                        <div className="card-body">
+                            <h3 className="card-title text-center mb-4">
+                                Iniciar sesión
+                            </h3>
 
-      <form onSubmit={handleSubmit}>
-        {/* Email */}
-        <div className="mb-3">
-          <label className="form-label">Email</label>
-          <input
-            type="email"
-            className="form-control"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-          />
+                            <form onSubmit={handleSubmit}>
+                                {/* Email */}
+                                <div className="mb-3">
+                                    <label className="form-label">Email</label>
+                                    <input
+                                        type="email"
+                                        className="form-control"
+                                        placeholder="correo@email.com"
+                                        value={email}
+                                        onChange={e => setEmail(e.target.value)}
+                                        required
+                                    />
+                                </div>
+
+                                {/* Password */}
+                                <div className="mb-3">
+                                    <label className="form-label">Contraseña</label>
+                                    <input
+                                        type="password"
+                                        className="form-control"
+                                        placeholder="••••••••"
+                                        value={password}
+                                        onChange={e => setPassword(e.target.value)}
+                                        required
+                                    />
+                                </div>
+
+                                <div className="d-grid">
+                                    <button
+                                        type="submit"
+                                        className="btn btn-primary"
+                                        disabled={loading}
+                                    >
+                                        {loading ? "Ingresando..." : "Login"}
+                                    </button>
+                                </div>
+                            </form>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
-
-        {/* Password */}
-        <div className="mb-3">
-          <label className="form-label">Contraseña</label>
-          <input
-            type="password"
-            className="form-control"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-          />
-        </div>
-
-        <button
-          type="submit"
-          className="btn btn-primary"
-          disabled={loading}
-        >
-          {loading ? "Ingresando..." : "Iniciar sesión"}
-        </button>
-      </form>
-    </div>
-  );
+    );
 };
