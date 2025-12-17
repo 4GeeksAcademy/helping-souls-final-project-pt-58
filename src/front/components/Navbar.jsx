@@ -10,9 +10,6 @@ export const Navbar = () => {
     alert("Project description");
   };
 
-  const handleLogin = () => {
-    alert("Login");
-  };
   const handleDonations
     = () => {
       alert("Donations");
@@ -61,7 +58,14 @@ export const Navbar = () => {
                 About Us
               </button>
             </li>
-
+            <li className="nav-item">
+              <button
+                className="nav-link btn btn-Link active"
+                onClick={handleDonations}
+              >
+                Donations
+              </button>
+            </li>
             <li className="nav-item dropdown">
               <Link
                 className="nav-link active  dropdown-toggle"
@@ -114,18 +118,17 @@ export const Navbar = () => {
                     Collection
                   </button>
                 </li>
-                <li className="nav-item">
-                  <button
-                    className="nav-link btn btn-Link active"
-                    onClick={handleDonations}
-                  >
-                    Donations
-
-                  </button>
-                </li>
               </ul>
             </li>
           </ul>
+          <div className="d-flex gap-2 ms-auto">
+            <Link to="/login" className="btn btn-outline-primary">
+              Login
+            </Link>
+            <Link to="/register" className="btn btn-primary">
+              sign up
+            </Link>
+          </div>
         </div>
       </div>
     </nav>
