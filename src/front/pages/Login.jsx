@@ -70,7 +70,7 @@ export const Login = () => {
                                     <input
                                         type="email"
                                         className="form-control"
-                                        placeholder="correo@email.com"
+                                        placeholder="email@email.com"
                                         value={email}
                                         onChange={e => setEmail(e.target.value)}
                                         required
