@@ -60,7 +60,7 @@ export const Login = () => {
                     <div className="card shadow-sm">
                         <div className="card-body">
                             <h3 className="card-title text-center mb-4">
-                                Iniciar sesión
+                                Log in
                             </h3>
 
                             <form onSubmit={handleSubmit}>
@@ -79,7 +79,7 @@ export const Login = () => {
 
                                 {/* Password */}
                                 <div className="mb-3">
-                                    <label className="form-label">Contraseña</label>
+                                    <label className="form-label">Password</label>
                                     <input
                                         type="password"
                                         className="form-control"

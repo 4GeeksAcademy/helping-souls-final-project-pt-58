@@ -46,7 +46,7 @@ export const Signup = () => {
                 return;
             }
 
-            alert("Usuario creado con éxito, ahora inicia sesión");
+            alert("User created successfully, please log in");
             navigate("/login");
 
         } catch (error) {
@@ -57,12 +57,12 @@ export const Signup = () => {
 
     return (
         <div className="container mt-4">
-            <h1>Registrate</h1>
+            <h1>Sign Up</h1>
 
             <form onSubmit={handleSubmit}>
                 {/* Nombre */}
                 <div className="mb-3">
-                    <label className="form-label">Nombre</label>
+                    <label className="form-label">Name</label>
                     <input
                         type="text"
                         className="form-control"
@@ -86,7 +86,7 @@ export const Signup = () => {
 
                 {/* Password */}
                 <div className="mb-3">
-                    <label className="form-label">Contraseña</label>
+                    <label className="form-label">Password</label>
                     <input
                         type="password"
                         className="form-control"
@@ -98,14 +98,14 @@ export const Signup = () => {
 
                 {/* Rol */}
                 <div className="mb-3">
-                    <label className="form-label">Rol</label>
+                    <label className="form-label">Role</label>
                     <select
                         className="form-select"
                         value={role}
                         onChange={(e) => setRole(e.target.value)}
                     >
-                        <option value="volunteer">Voluntario</option>
-                        <option value="organizer">Organizador</option>
+                        <option value="volunteer">Volunteer</option>
+                        <option value="organizer">Organization</option>
                     </select>
                 </div>
 
@@ -113,7 +113,7 @@ export const Signup = () => {
                 {role === "organizer" && (
                     <>
                         <div className="mb-3">
-                            <label className="form-label">Nombre de la organización</label>
+                            <label className="form-label">Organization's name</label>
                             <input
                                 type="text"
                                 className="form-control"
@@ -124,7 +124,7 @@ export const Signup = () => {
                         </div>
 
                         <div className="mb-3">
-                            <label className="form-label">Link de la organización</label>
+                            <label className="form-label">Organization's Link</label>
                             <input
                                 type="url"
                                 className="form-control"
@@ -137,7 +137,7 @@ export const Signup = () => {
                 )}
 
                 <button type="submit" className="btn btn-primary">
-                    Registrarse
+                    Sign in
                 </button>
             </form>
         </div>
