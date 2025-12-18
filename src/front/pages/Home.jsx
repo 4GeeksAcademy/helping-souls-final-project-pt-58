@@ -1,5 +1,4 @@
 import React, { useEffect } from "react"
-import rigoImageUrl from "../assets/img/rigo-baby.jpg";
 import useGlobalReducer from "../hooks/useGlobalReducer.jsx";
 
 export const Home = () => {
@@ -10,7 +9,10 @@ export const Home = () => {
 		try {
 			const backendUrl = import.meta.env.VITE_BACKEND_URL
 
-			if (!backendUrl) throw new Error("VITE_BACKEND_URL is not defined in .env file")
+			if (!backendUrl) {
+      		console.error("VITE_BACKEND_URL is not defined");
+      		return;
+   			 }
 
 			const response = await fetch(backendUrl + "/api/hello")
 			const data = await response.json()
@@ -26,27 +28,39 @@ export const Home = () => {
 			);
 		}
 
-	}
+	};
 
 	useEffect(() => {
 		loadMessage()
 	}, [])
 
-	return (
-		<div className="text-center mt-5">
-			<h1 className="display-4">Hello Rigo!!</h1>
-			<p className="lead">
-				<img src={rigoImageUrl} className="img-fluid rounded-circle mb-3" alt="Rigo Baby" />
-			</p>
-			<div className="alert alert-info">
-				{store.message ? (
-					<span>{store.message}</span>
-				) : (
-					<span className="text-danger">
-						Loading message from the backend (make sure your python 🐍 backend is running)...
-					</span>
-				)}
-			</div>
-		</div>
-	);
-}; 
+return (
+  <>
+    <div className="card text">
+      <img
+        src="https://quiurevista.com/wp-content/uploads/2021/09/Voluntariado_Beneficios.jpg"
+        className="img-fluid mb-3"
+        alt="Helping Souls"
+      />
+      <div className="card-img-overlay">
+        <h1 className="card-title">Helping Souls</h1>
+        <p className="card-text">
+          Helping the world and others is helping yourself
+        </p>
+        <p className="card-text">
+          <small>Let's be volunteers</small>
+        </p>
+      </div>
+    </div>
+    <div className="alert alert-info mt-3">
+      {store.message ? (
+        <span>{store.message}</span>
+      ) : (
+        <span className="text-danger">
+          Loading message from the backend (make sure your python 🐍 backend is running)...
+        </span>
+      )}
+    </div>
+  </>
+);
+};
