@@ -1,11 +1,27 @@
 import { Link } from "react-router-dom";
 import React from "react";
 
+
 export const Navbar = () => {
+  const handleContact = () => {
+    alert("Contact form");
+  };
+  const handleAboutUs = () => {
+    alert("Project description");
+  };
+
+  const handleDonations
+    = () => {
+      alert("Donations");
+    };
+
+  const handleCategory = (category) => {
+    alert(`campaign types: ${category}`);
+  };
+
   return (
     <nav className="navbar navbar-expand-lg bg-body-tertiary">
       <div className="container-fluid">
-
         <Link className="navbar-brand" to="/">
           HELPING SOULS
         </Link>
@@ -14,7 +30,7 @@ export const Navbar = () => {
           className="navbar-toggler"
           type="button"
           data-bs-toggle="collapse"
-          data-bs-target="#navbarSupportedContent"
+          data-bs-target="/navbarSupportedContent"
           aria-controls="navbarSupportedContent"
           aria-expanded="false"
           aria-label="Toggle navigation"
@@ -25,52 +41,94 @@ export const Navbar = () => {
         <div className="collapse navbar-collapse" id="navbarSupportedContent">
           <ul className="navbar-nav me-auto mb-2 mb-lg-0">
 
-            {/* Opportunities */}
-            <li className="nav-item">
-              <Link className="nav-link" to="/opportunities">
-                Opportunities
-              </Link>
-            </li>
 
-            {/* Create opportunity */}
             <li className="nav-item">
-              <Link className="nav-link" to="/opportunities/new">
-                Create
-              </Link>
+              <button
+                className="nav-link btn btn-Link active"
+                onClick={handleContact}
+              >
+                Contacto
+              </button>
             </li>
-
-            {/* Profile */}
             <li className="nav-item">
-              <Link className="nav-link" to="/profile">
-                Profile
-              </Link>
+              <button
+                className="nav-link btn btn-Link active"
+                onClick={handleAboutUs}
+              >
+                About Us
+              </button>
             </li>
-
-            {/* Category dropdown (placeholder) */}
+            <li className="nav-item">
+              <button
+                className="nav-link btn btn-Link active"
+                onClick={handleDonations}
+              >
+                Donations
+              </button>
+            </li>
             <li className="nav-item dropdown">
-              <span
-                className="nav-link dropdown-toggle"
+              <Link
+                className="nav-link active  dropdown-toggle"
+                href="/"
                 role="button"
                 data-bs-toggle="dropdown"
                 aria-expanded="false"
               >
                 Category
-              </span>
+              </Link>
 
               <ul className="dropdown-menu">
-                <li><span className="dropdown-item">Animals</span></li>
-                <li><span className="dropdown-item">Environment</span></li>
-                <li><span className="dropdown-item">Seniors</span></li>
-                <li><span className="dropdown-item">Children</span></li>
-                <li><span className="dropdown-item">Collection</span></li>
+                <li>
+                  <button
+                    className="dropdown-item"
+                    onClick={() => handleCategory("Animals")}
+                  >
+                    Animals
+                  </button>
+                </li>
+                <li>
+                  <button
+                    className="dropdown-item"
+                    onClick={() => handleCategory("Environment")}
+                  >
+                    Environment
+                  </button>
+                </li>
+                <li>
+                  <button
+                    className="dropdown-item"
+                    onClick={() => handleCategory("Seniors")}
+                  >
+                    Seniors
+                  </button>
+                </li>
+                <li>
+                  <button
+                    className="dropdown-item"
+                    onClick={() => handleCategory("Children")}
+                  >
+                    Children
+                  </button>
+                </li>
+                <li>
+                  <button
+                    className="dropdown-item"
+                    onClick={() => handleCategory("Collection")}
+                  >
+                    Collection
+                  </button>
+                </li>
               </ul>
             </li>
           </ul>
-
-          {/* Login (aunque sea placeholder) */}
-          <Link className="btn btn-outline-success" to="/login">
-            Login
-          </Link>
+          <div className="d-flex gap-2 ms-auto">
+            <Link to="/login" className="btn btn-outline-primary">
+              Login
+            </Link>
+            <Link to="/signup" className="btn btn-primary">
+              Sign up
+            </Link>
+          </div>
         </div>
       </div>
     </nav>

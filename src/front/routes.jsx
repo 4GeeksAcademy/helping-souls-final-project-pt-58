@@ -6,12 +6,14 @@ import {
 
 import { Layout } from "./pages/Layout";
 
-// Public pages
+// Existing pages
 import { Home } from "./pages/Home";
-import { VolunteerList } from "./pages/OrganizerProfile";
-import { VolunteerDetails } from "./pages/VolunteerDetails";
+import { Demo } from "./pages/Demo";
+import { Single } from "./pages/Single";
 
-// Pages you are responsible for
+import { Signup } from "./pages/Signup";
+import { Login } from "./pages/Login";
+
 import { CreateEvent } from "./pages/CreateEvent";
 import { VolunteerProfile } from "./pages/VolunteerProfile";
 import { OrganizerProfile } from "./pages/OrganizerProfile";
@@ -20,13 +22,16 @@ import { Donations } from "./pages/Donations";
 export const router = createBrowserRouter(
   createRoutesFromElements(
     <Route path="/" element={<Layout />} errorElement={<h1>Not found!</h1>}>
-
       <Route index element={<Home />} />
 
+      {/* Auth */}
+      <Route path="register" element={<Signup />} />
+      <Route path="login" element={<Login />} />
+
       {/* Events */}
-      <Route path="events" element={<VolunteerList />} />
+      <Route path="events" element={<Demo />} />
       <Route path="events/new" element={<CreateEvent />} />
-      <Route path="events/:id" element={<VolunteerDetails />} />
+      <Route path="events/:id" element={<Single />} />
 
       {/* Profiles */}
       <Route path="profile/volunteer" element={<VolunteerProfile />} />
@@ -34,7 +39,6 @@ export const router = createBrowserRouter(
 
       {/* Donations */}
       <Route path="donations" element={<Donations />} />
-
     </Route>
   )
 );
