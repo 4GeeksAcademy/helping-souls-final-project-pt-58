@@ -7,10 +7,14 @@ from api.utils import generate_sitemap, APIException
 from flask_cors import CORS
 from datetime import datetime
 from flask_jwt_extended import jwt_required, get_jwt_identity
-
-
 from flask_jwt_extended import create_access_token, get_jwt_identity,  jwt_required
 from werkzeug.security import generate_password_hash, check_password_hash
+import os
+import stripe
+
+stripe.api_key = os.getenv("STRIPE_SECRET_KEY")
+
+FRONTEND_URL = "https://potential-guide-g4w4679gpr953r-3000.app.github.dev/"
 
 api = Blueprint('api', __name__)
 
@@ -216,3 +220,33 @@ def get_all_events():
             for event in events
         ]
     }), 200
+
+@api.route("/create-checkout-session", methods=["POST"])
+def create_checkout_session():
+    data = request.get_json()
+    amount = data.get("amount", 10)
+
+    try:
+        session = stripe.checkout.Session.create(
+            payment_method_types=["card"],
+            mode="payment",
+            line_items=[{
+                "price_data": {
+                    "currency": "usd",
+                    "product_data": {
+                        "name": "Donation",
+                        "description": "Thank you for your support ❤️"
+                    },
+                    "unit_amount": amount * 100,
+                },
+                "quantity": 1,
+            }],
+
+            success_url=f"{FRONTEND_URL}/success",
+            cancel_url=f"{FRONTEND_URL}/cancel",
+        )
+
+        return jsonify({"url": session.url})
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
