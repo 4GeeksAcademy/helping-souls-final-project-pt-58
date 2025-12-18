@@ -1,6 +1,9 @@
 """
 This module takes care of starting the API Server, Loading the DB and Adding the endpoints
 """
+from dotenv import load_dotenv
+load_dotenv()
+
 from flask import Flask, request, jsonify, url_for, Blueprint
 from api.models import db, User, Events, Organizer, Volunteer
 from api.utils import generate_sitemap, APIException
@@ -14,7 +17,7 @@ import stripe
 
 stripe.api_key = os.getenv("STRIPE_SECRET_KEY")
 
-FRONTEND_URL = "https://potential-guide-g4w4679gpr953r-3000.app.github.dev/"
+FRONTEND_URL = "https://upgraded-enigma-wrjrxg6w44w52rrr-3000.app.github.dev/"
 
 api = Blueprint('api', __name__)
 

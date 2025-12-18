@@ -10,11 +10,6 @@ export const Navbar = () => {
     alert("Project description");
   };
 
-  const handleDonations
-    = () => {
-      alert("Donations");
-    };
-
   const handleCategory = (category) => {
     alert(`campaign types: ${category}`);
   };
@@ -59,12 +54,11 @@ export const Navbar = () => {
               </button>
             </li>
             <li className="nav-item">
-              <button
-                className="nav-link btn btn-Link active"
-                onClick={handleDonations}
-              >
-                Donations
-              </button>
+              <Link to='donations'>  
+                <button className="btn">
+                  Donations
+                </button>
+              </Link>
             </li>
             <li className="nav-item dropdown">
               <Link
