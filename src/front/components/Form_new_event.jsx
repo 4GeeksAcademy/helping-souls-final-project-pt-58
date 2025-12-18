@@ -15,6 +15,7 @@ export const FormNewEvent = (props) => {
         </div>
         <div className="col-md-8">
           <div className="card-body">
+        
             <h5 className="card-title">{props.information.name}
               <div className="button-card">
                 <Link to={'/editevent/' + props.information.id}>
