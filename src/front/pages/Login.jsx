@@ -1,6 +1,6 @@
 import { useContext, useState } from "react";
 import { StoreContext } from "../hooks/useGlobalReducer";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 
 export const Login = () => {
     const { dispatch } = useContext(StoreContext);
@@ -45,7 +45,7 @@ export const Login = () => {
                 }
             });
 
-            navigate("/");
+            navigate("/campaignsboard");
         } catch (error) {
             alert("Error de conexión");
         } finally {
@@ -100,6 +100,14 @@ export const Login = () => {
                                     </button>
                                 </div>
                             </form>
+                            {/* Sign up link */}
+                            <div className="text-center mt-3">
+                                <p className="mb-1">Don’t have an account?</p>
+                                <Link to="/signup" className="text-decoration-none fw-semibold">
+                                    Sign up instead
+                                </Link>
+                            </div>
+
 
                         </div>
                     </div>

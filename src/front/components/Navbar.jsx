@@ -1,23 +1,25 @@
-import { Link } from "react-router-dom";
-import React from "react";
-
+import { Link, useNavigate } from "react-router-dom";
+import React, { useContext } from "react";
+import { StoreContext } from "../hooks/useGlobalReducer";
 
 export const Navbar = () => {
-  const handleContact = () => {
-    alert("Contact form");
-  };
-  const handleAboutUs = () => {
-    alert("Project description");
+  const { store, dispatch } = useContext(StoreContext);
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+
+    dispatch({ type: "logout" });
+
+    navigate("/login");
   };
 
-  const handleDonations
-    = () => {
-      alert("Donations");
-    };
-
-  const handleCategory = (category) => {
+  const handleContact = () => alert("Contact form");
+  const handleAboutUs = () => alert("Project description");
+  const handleDonations = () => alert("Donations");
+  const handleCategory = (category) =>
     alert(`campaign types: ${category}`);
-  };
 
   return (
     <nav className="navbar navbar-expand-lg bg-body-tertiary">
@@ -30,7 +32,7 @@ export const Navbar = () => {
           className="navbar-toggler"
           type="button"
           data-bs-toggle="collapse"
-          data-bs-target="/navbarSupportedContent"
+          data-bs-target="#navbarSupportedContent"
           aria-controls="navbarSupportedContent"
           aria-expanded="false"
           aria-label="Toggle navigation"
@@ -40,94 +42,77 @@ export const Navbar = () => {
 
         <div className="collapse navbar-collapse" id="navbarSupportedContent">
           <ul className="navbar-nav me-auto mb-2 mb-lg-0">
-
-
+            {/* Campaigns (solo logueado) */}
+            {store.isAuth && (
+              <li className="nav-item">
+                <Link className="nav-link" to="/campaignsboard">
+                  Campaigns
+                </Link>
+              </li>
+            )}
             <li className="nav-item">
-              <button
-                className="nav-link btn btn-Link active"
-                onClick={handleContact}
-              >
+              <button className="nav-link btn btn-link" onClick={handleContact}>
                 Contacto
               </button>
             </li>
+
             <li className="nav-item">
-              <button
-                className="nav-link btn btn-Link active"
-                onClick={handleAboutUs}
-              >
+              <button className="nav-link btn btn-link" onClick={handleAboutUs}>
                 About Us
               </button>
             </li>
+
             <li className="nav-item">
-              <button
-                className="nav-link btn btn-Link active"
-                onClick={handleDonations}
-              >
+              <button className="nav-link btn btn-link" onClick={handleDonations}>
                 Donations
               </button>
             </li>
+
             <li className="nav-item dropdown">
-              <Link
-                className="nav-link active  dropdown-toggle"
-                href="/"
+              <span
+                className="nav-link dropdown-toggle"
                 role="button"
                 data-bs-toggle="dropdown"
-                aria-expanded="false"
               >
                 Category
-              </Link>
+              </span>
 
               <ul className="dropdown-menu">
-                <li>
-                  <button
-                    className="dropdown-item"
-                    onClick={() => handleCategory("Animals")}
-                  >
-                    Animals
-                  </button>
-                </li>
-                <li>
-                  <button
-                    className="dropdown-item"
-                    onClick={() => handleCategory("Environment")}
-                  >
-                    Environment
-                  </button>
-                </li>
-                <li>
-                  <button
-                    className="dropdown-item"
-                    onClick={() => handleCategory("Seniors")}
-                  >
-                    Seniors
-                  </button>
-                </li>
-                <li>
-                  <button
-                    className="dropdown-item"
-                    onClick={() => handleCategory("Children")}
-                  >
-                    Children
-                  </button>
-                </li>
-                <li>
-                  <button
-                    className="dropdown-item"
-                    onClick={() => handleCategory("Collection")}
-                  >
-                    Collection
-                  </button>
-                </li>
+                {["Animals", "Environment", "Seniors", "Children", "Collection"].map(
+                  (cat) => (
+                    <li key={cat}>
+                      <button
+                        className="dropdown-item"
+                        onClick={() => handleCategory(cat)}
+                      >
+                        {cat}
+                      </button>
+                    </li>
+                  )
+                )}
               </ul>
             </li>
           </ul>
+
+          {/* 🔐 AUTH BUTTONS */}
           <div className="d-flex gap-2 ms-auto">
-            <Link to="/login" className="btn btn-outline-primary">
-              Login
-            </Link>
-            <Link to="/signup" className="btn btn-primary">
-              Sign up
-            </Link>
+            {store.isAuth ? (
+              <button
+                className="btn btn-danger"
+                onClick={handleLogout}
+              >
+                Log out
+              </button>
+            ) : (
+              <>
+                <Link to="/login" className="btn btn-outline-primary">
+                  Login
+                </Link>
+                <Link to="/signup" className="btn btn-primary">
+                  Sign up
+                </Link>
+              </>
+            )}
           </div>
         </div>
       </div>
