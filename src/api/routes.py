@@ -245,8 +245,8 @@ def create_checkout_session():
                 "quantity": 1,
             }],
 
-            success_url=f"{FRONTEND_URL}/success",
-            cancel_url=f"{FRONTEND_URL}/cancel",
+            success_url=f"{FRONTEND_URL}success",
+            cancel_url=f"{FRONTEND_URL}cancel",
         )
 
         return jsonify({"url": session.url})

@@ -13,11 +13,12 @@ import { Single } from "./pages/Single";
 
 import { Signup } from "./pages/Signup";
 import { Login } from "./pages/Login";
-
 import { CreateEvent } from "./pages/CreateEvent";
 import { VolunteerProfile } from "./pages/VolunteerProfile";
 import { OrganizerProfile } from "./pages/OrganizerProfile";
 import { Donations } from "./pages/Donations";
+import { Success } from "./pages/Success";
+import { Cancel } from "./pages/Cancel";
 
 export const router = createBrowserRouter(
   createRoutesFromElements(
@@ -39,6 +40,8 @@ export const router = createBrowserRouter(
 
       {/* Donations */}
       <Route path="donations" element={<Donations />} />
+      <Route path="success" element={<Success />} />
+      <Route path="cancel" element={<Cancel />} />
     </Route>
   )
 );
