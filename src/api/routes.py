@@ -48,6 +48,7 @@ def new_event():
         file.save(os.path.join(UPLOAD_FOLDER, filename))
         image_filename = filename
 
+    data = request.form
     if not data:
         return jsonify({"msg": "No data provided"}), 400
 
@@ -65,7 +66,6 @@ def new_event():
     except ValueError:
         return jsonify({"msg": "Invalid date format"}), 400
 
-    data = request.form
     event = Events(
         organizerID=organizer.organizerID,
         name=data['name'],
@@ -74,7 +74,7 @@ def new_event():
         category=data['category'],
         max_volunteers=int(data['max_volunteers']),
         description=data['description'],
-        review=data['review'],
+        #review=data['review'],
         image=image_filename
 
     )

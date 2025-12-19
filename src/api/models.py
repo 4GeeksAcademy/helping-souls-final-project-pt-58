@@ -129,7 +129,7 @@ class Events(db.Model):
     description: Mapped[str]=mapped_column(String(320), nullable=False)
     location: Mapped[str]=mapped_column(String(200), nullable=False)
     max_volunteers: Mapped[int]=mapped_column(nullable=False)
-    review: Mapped[str]=mapped_column(String(200), nullable=True)
+    #review: Mapped[str]=mapped_column(String(200), nullable=True)
     image: Mapped[str]=mapped_column(String(200), nullable=True)
 
     comments: Mapped['Event_Comments']=relationship('Event_Comments', lazy=True, backref='event')
@@ -145,5 +145,5 @@ class Events(db.Model):
            'description': self.description,
            'location': self.location,
            'max_volunteers': self.max_volunteers,
-           'review': self.review 
+           #'review': self.review 
         }

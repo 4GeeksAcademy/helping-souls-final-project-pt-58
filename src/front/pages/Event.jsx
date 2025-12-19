@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import useGlobalReducer from "../hooks/useGlobalReducer";
-import { FormNewEvent } from "../component/FormNewEvent";
+import { FormNewEvent } from "../components/Form_new_event";
 import { Link, useNavigate } from "react-router-dom";
 
 
@@ -8,7 +8,7 @@ export const EventsView = () => {
 
     const { store, dispatch } = useGlobalReducer()
     const navigate = useNavigate();
-    const token = localStorage.getItem("jwt");
+    const token = localStorage.getItem("token");
     const [form, setForm] = useState({
         name: "",
         event_date: "",
@@ -41,21 +41,6 @@ export const EventsView = () => {
 
     const handleSubmit = e => {
         e.preventDefault();
-    
-    };
-    const handleDelete = (eventID) => {
-            fetch(`/api/events/${eventID}`, {
-                method: "DELETE",
-                headers: { Authorization: `Bearer ${token}` }
-            }).then(res => {
-                if (res.ok) {
-                    dispatch({
-                        type: "delete_event",
-                        payload: eventID
-                    });
-                }
-            });
-    };
 
         const formData = new FormData();
         Object.entries(form).forEach(([key, value]) =>
@@ -83,6 +68,23 @@ export const EventsView = () => {
                 navigate("/events");
             })
             .catch(err => console.error(err));
+    
+    };
+    const handleDelete = (eventID) => {
+            fetch(`/api/events/${eventID}`, {
+                method: "DELETE",
+                headers: { Authorization: `Bearer ${token}` }
+            }).then(res => {
+                if (res.ok) {
+                    dispatch({
+                        type: "delete_event",
+                        payload: eventID
+                    });
+                }
+            });
+    };
+
+        
         
 
         return (

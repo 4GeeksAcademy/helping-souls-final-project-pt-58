@@ -62,13 +62,20 @@ export default function storeReducer(store, action = {}) {
         )
       };
       ////
-      case 'add_events':
+      case "set_event":
+
+      return {
+        ...store,
+        events: action.payload
+      };
+
+      case "add_event":
 
       return {
         ...store,
         events: [...store.events, action.payload]
       };
-            case 'delete_events':
+      case "delete_event":
 
       return {
         ...store,
