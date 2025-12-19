@@ -13,6 +13,8 @@ export const Navbar = () => {
     dispatch({ type: "logout" });
 
     navigate("/login");
+  const handleCategory = (category) => {
+    alert(`campaign types: ${category}`);
   };
 
   const handleContact = () => alert("Contact form");
@@ -66,6 +68,11 @@ export const Navbar = () => {
               <button className="nav-link btn btn-link" onClick={handleDonations}>
                 Donations
               </button>
+              <Link to='donations'>  
+                <button className="btn">
+                  Donations
+                </button>
+              </Link>
             </li>
 
             <li className="nav-item dropdown">
