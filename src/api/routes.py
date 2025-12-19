@@ -74,7 +74,7 @@ def new_event():
         category=data['category'],
         max_volunteers=int(data['max_volunteers']),
         description=data['description'],
-        review=data.get('review')
+        review=data['review'],
         image=image_filename
 
     )
