@@ -145,5 +145,6 @@ class Events(db.Model):
            'description': self.description,
            'location': self.location,
            'max_volunteers': self.max_volunteers,
-           #'review': self.review 
+           #'review': self.review,
+           'image' : self.image,
         }

@@ -1,142 +1,227 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect } from "react";
+import { useNavigate, Link } from "react-router-dom";
 import useGlobalReducer from "../hooks/useGlobalReducer";
 import { FormNewEvent } from "../components/Form_new_event";
-import { Link, useNavigate } from "react-router-dom";
-
 
 export const EventsView = () => {
+  const { store, dispatch } = useGlobalReducer();
+  const navigate = useNavigate();
 
-    const { store, dispatch } = useGlobalReducer()
-    const navigate = useNavigate();
-    const token = localStorage.getItem("token");
-    const [form, setForm] = useState({
-        name: "",
-        event_date: "",
-        location: "",
-        category: "",
-        max_volunteers: "",
-        description: ""
+  const token = localStorage.getItem("token");
+  const storedUser = localStorage.getItem("user");
+  const storeUser = storedUser ? JSON.parse(storedUser) : null; // Obtener rol
+
+  const backendUrl = import.meta.env.VITE_BACKEND_URL;
+
+  const [form, setForm] = useState({
+    name: "",
+    event_date: "",
+    location: "",
+    category: "",
+    max_volunteers: "",
+    description: ""
+  });
+
+  const [image, setImage] = useState(null);
+  const [error, setError] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [unauthorized, setUnauthorized] = useState(false);
+
+  /* =========================
+     RESTRICCIÓN POR ROL
+  ========================= */
+  useEffect(() => {
+    if (!token || storeUser?.role !== "organizer") {
+      setUnauthorized(true);
+
+      const timer = setTimeout(() => {
+        navigate("/campaignsboard"); // Redirige después de 5 segundos
+      }, 5000);
+
+      return () => clearTimeout(timer);
+    }
+  }, [navigate, token, storeUser]);
+
+  /* =========================
+     LOAD EVENTS
+  ========================= */
+  useEffect(() => {
+    if (!token) return;
+
+    fetch(`${backendUrl}/api/events`, {
+      headers: { Authorization: `Bearer ${token}` }
+    })
+      .then(res => res.json())
+      .then(data => {
+        dispatch({ type: "set_events", payload: data.events || [] });
+      })
+      .catch(err => console.error("Fetch events error:", err));
+  }, [token, dispatch, backendUrl]);
+
+  /* =========================
+     FORM HANDLERS
+  ========================= */
+  const handleChange = e => {
+    setForm({ ...form, [e.target.name]: e.target.value });
+  };
+
+  /* =========================
+     CREATE EVENT
+  ========================= */
+  const handleSubmit = async e => {
+    e.preventDefault();
+    setError(null);
+    setLoading(true);
+
+    const formData = new FormData();
+    Object.entries(form).forEach(([key, value]) => formData.append(key, value));
+    if (image) formData.append("image", image);
+
+    try {
+      const response = await fetch(`${backendUrl}/api/new_events`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}` },
+        body: formData
+      });
+
+      const contentType = response.headers.get("content-type");
+
+      if (!contentType || !contentType.includes("application/json")) {
+        const text = await response.text();
+        throw new Error(text);
+      }
+
+      const data = await response.json();
+
+      if (!response.ok) throw new Error(data.msg || "Error creating event");
+
+      dispatch({ type: "add_event", payload: data.event });
+      navigate("/campaignsboard");
+
+    } catch (err) {
+      console.error("Create event error:", err);
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  /* =========================
+     DELETE EVENT
+  ========================= */
+  const handleDelete = eventID => {
+    fetch(`${backendUrl}/api/events/${eventID}`, {
+      method: "DELETE",
+      headers: { Authorization: `Bearer ${token}` }
+    }).then(res => {
+      if (res.ok) dispatch({ type: "delete_event", payload: eventID });
     });
-    const [image, setImage] = useState(null);
+  };
 
-    /// load event
-    useEffect(() => {
-        fetch("/api/events", {
-            headers: {
-                Authorization: `Bearer ${token}`
-            }
-        })
-            .then(res => res.json())
-            .then(data => {
-                dispatch({
-                    type: "set_events",
-                    payload: data
-                });
-            });
-    }, []);
+  /* =========================
+     RENDER
+  ========================= */
+  if (unauthorized) {
+    return (
+      <div className="container mt-5 text-center">
+        <h3 className="text-danger mb-3">Access Denied</h3>
+        <p>Only organizers can create events.</p>
+        <p>Redirecting to Campaign Board </p>
+      </div>
+    );
+  }
 
-    const handleChange = e => {
-        setForm({ ...form, [e.target.name]: e.target.value });
-    };
+  return (
+    <div className="container mt-4">
+      <h2>Create Event</h2>
 
-    const handleSubmit = e => {
-        e.preventDefault();
+      {error && <div className="alert alert-danger">{error}</div>}
 
-        const formData = new FormData();
-        Object.entries(form).forEach(([key, value]) =>
-            formData.append(key, value)
-        );
-        if (image) formData.append("image", image);
+      <form onSubmit={handleSubmit} className="mb-4">
+        <input
+          className="form-control mb-2"
+          name="name"
+          placeholder="Event name"
+          value={form.name}
+          onChange={handleChange}
+          required
+        />
 
-        fetch("/api/new_events", {
-            method: "POST",
-            headers: {
-                Authorization: `Bearer ${token}`
-            },
-            body: formData
-        })
-            .then(res => res.json())
-            .then(data => {
-                dispatch({
-                    type: "add_event",
-                    payload: {
-                        ...form,
-                        eventID: data.event_id,
-                        image: image?.name
-                    }
-                });
-                navigate("/events");
-            })
-            .catch(err => console.error(err));
-    
-    };
-    const handleDelete = (eventID) => {
-            fetch(`/api/events/${eventID}`, {
-                method: "DELETE",
-                headers: { Authorization: `Bearer ${token}` }
-            }).then(res => {
-                if (res.ok) {
-                    dispatch({
-                        type: "delete_event",
-                        payload: eventID
-                    });
-                }
-            });
-    };
+        <input
+          type="date"
+          className="form-control mb-2"
+          name="event_date"
+          value={form.event_date}
+          onChange={handleChange}
+          required
+        />
 
-        
-        
+        <input
+          className="form-control mb-2"
+          name="location"
+          placeholder="Location"
+          value={form.location}
+          onChange={handleChange}
+          required
+        />
 
-        return (
-            <div className='container'>
-                <h2>Create Event</h2>
-                <form onSubmit={handleSubmit} className="mb-4">
-                    <div className="col-md-12">
-                        <label htmlFor="inputName" className="form-label">Event name</label>
-                        <input type="text" className="form-control" id="inputName" placeholder='Event name' value={form.name} onChange={handleChange} name="name" required />
-                    </div>
-                    <div className="col-md-4">
-                        <label htmlFor="inputEmail" className="form-label">Date</label>
-                        <input type="date" className="form-control" placeholder='Date' name="event_date" value={form.event_date} onChange={handleChange} required />
-                    </div>
-                    <div className="col-md-8">
-                        <label htmlFor="inputPhone" className="form-label">Location</label>
-                        <input type="text" className="form-control" name="location" placeholder="Location" value={form.location} onChange={handleChange} required />
-                    </div>
-                    <div className="col-md-12">
-                        <label htmlFor="inputAddress" className="form-label">Category</label>
-                        <input type="text" className="form-control" name="category" placeholder="Category" value={form.category} onChange={handleChange} required />
-                    </div>
-                    <div className="col-md-12">
-                        <label htmlFor="inputAddress" className="form-label">Max Volunteers</label>
-                        <input type="number" name="max_volunteers" placeholder="Max volunteers" value={form.max_volunteers} onChange={handleChange} required />
-                    </div>
-                    <div className="col-md-12">
-                        <label htmlFor="inputAddress" className="form-label">Description</label>
-                        <textarea className="form-control mb-2" name="description" placeholder="Description" value={form.description} onChange={handleChange} required />
-                    </div>
-                    <input className="form-control mb-3" type="file" accept="image/*" onChange={e => setImage(e.target.files[0])} />
-                    <div className="col-md-12">
-                        <button type="submit" className="btn btn-secondary" >Create Event</button>
-                    </div>
-                </form>
-                <Link to="/">
-                    <button className="btn btn-outline-secondary">or get Back to Home</button>
-                </Link>
-                <h3>Events</h3>
+        <input
+          className="form-control mb-2"
+          name="category"
+          placeholder="Category"
+          value={form.category}
+          onChange={handleChange}
+          required
+        />
 
-                {store.events.length === 0 ? (
-                    <p>No events available</p>
-                ) : (
-                    store.events.map(event => (
-                        <FormNewEvent
-                            key={event.eventID}
-                            information={event}
-                            eliminar={handleDelete}
-                        />
-                    ))
-                )}
+        <input
+          type="number"
+          className="form-control mb-2"
+          name="max_volunteers"
+          placeholder="Max volunteers"
+          value={form.max_volunteers}
+          onChange={handleChange}
+          required
+        />
 
-            </div>
-        );
-    };
+        <textarea
+          className="form-control mb-2"
+          name="description"
+          placeholder="Description"
+          value={form.description}
+          onChange={handleChange}
+          required
+        />
+
+        <input
+          type="file"
+          className="form-control mb-3"
+          accept="image/*"
+          onChange={e => setImage(e.target.files[0])}
+        />
+
+        <button type="submit" className="btn btn-success" disabled={loading}>
+          {loading ? "Creating..." : "Create Event"}
+        </button>
+      </form>
+
+      <Link to="/campaignsboard" className="btn btn-outline-secondary mb-4">
+        Back to Campaigns
+      </Link>
+
+      <h3>Events</h3>
+
+      {store.events.length === 0 ? (
+        <p>No events available</p>
+      ) : (
+        store.events.map(event => (
+          <FormNewEvent
+            key={event.eventID}
+            information={event}
+            eliminar={handleDelete}
+          />
+        ))
+      )}
+    </div>
+  );
+};
