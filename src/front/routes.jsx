@@ -1,36 +1,49 @@
-// Import necessary components and functions from react-router-dom.
-
 import {
   createBrowserRouter,
   createRoutesFromElements,
   Route,
 } from "react-router-dom";
+
 import { Layout } from "./pages/Layout";
+
+// Existing pages
 import { Home } from "./pages/Home";
-import { Single } from "./pages/Single";
 import { Demo } from "./pages/Demo";
+import { Single } from "./pages/Single";
+
 import { Signup } from "./pages/Signup";
 import { Login } from "./pages/Login";
-import { EventsView } from "./pages/Event";
+import { CreateEvent } from "./pages/CreateEvent";
+import { VolunteerProfile } from "./pages/VolunteerProfile";
+import { OrganizerProfile } from "./pages/OrganizerProfile";
+import { Donations } from "./pages/Donations";
+import { Success } from "./pages/Success";
+import { Cancel } from "./pages/Cancel";
+import {EventsView} from "./pages/Events";
 
 export const router = createBrowserRouter(
   createRoutesFromElements(
-    // CreateRoutesFromElements function allows you to build route elements declaratively.
-    // Create your routes here, if you want to keep the Navbar and Footer in all views, add your new routes inside the containing Route.
-    // Root, on the contrary, create a sister Route, if you have doubts, try it!
-    // Note: keep in mind that errorElement will be the default page when you don't get a route, customize that page to make your project more attractive.
-    // Note: The child paths of the Layout element replace the Outlet component with the elements contained in the "element" attribute of these child paths.
+    <Route path="/" element={<Layout />} errorElement={<h1>Not found!</h1>}>
+      <Route index element={<Home />} />
 
-    // Root Route: All navigation will start from here.
-    <Route path="/" element={<Layout />} errorElement={<h1>Not found!</h1>} >
+      {/* Auth */}
+      <Route path="register" element={<Signup />} />
+      <Route path="login" element={<Login />} />
 
-      {/* Nested Routes: Defines sub-routes within the BaseHome component. */}
-      <Route path="/" element={<Home />} />
-      <Route path="/single/:theId" element={<Single />} />  {/* Dynamic route for single items */}
-      <Route path="/demo" element={<Demo />} />
-      <Route path="/signup" element={<Signup />} />
-      <Route path="/login" element={<Login />} />
+      {/* Events */}
+      <Route path="events" element={<Demo />} />
+      <Route path="events/new" element={<CreateEvent />} />
+      <Route path="events/:id" element={<Single />} />
       <Route path="/events" element={<EventsView />} />
+
+      {/* Profiles */}
+      <Route path="profile/volunteer" element={<VolunteerProfile />} />
+      <Route path="profile/organizer" element={<OrganizerProfile />} />
+
+      {/* Donations */}
+      <Route path="donations" element={<Donations />} />
+      <Route path="success" element={<Success />} />
+      <Route path="cancel" element={<Cancel />} />
     </Route>
   )
 );
