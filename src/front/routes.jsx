@@ -19,6 +19,7 @@ import { OrganizerProfile } from "./pages/OrganizerProfile";
 import { Donations } from "./pages/Donations";
 import { Success } from "./pages/Success";
 import { Cancel } from "./pages/Cancel";
+import {EventsView} from "./pages/Events";
 
 export const router = createBrowserRouter(
   createRoutesFromElements(
@@ -33,6 +34,7 @@ export const router = createBrowserRouter(
       <Route path="events" element={<Demo />} />
       <Route path="events/new" element={<CreateEvent />} />
       <Route path="events/:id" element={<Single />} />
+      <Route path="/events" element={<EventsView />} />
 
       {/* Profiles */}
       <Route path="profile/volunteer" element={<VolunteerProfile />} />
