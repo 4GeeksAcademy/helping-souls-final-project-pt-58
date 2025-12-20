@@ -118,7 +118,7 @@ export const CampaignsBoard = () => {
             className="btn btn-success"
             onClick={() => navigate("/events")} // Redirige a página de creación
           >
-            + Create Campaign
+            Create Campaign
           </button>
         )}
       </div>
