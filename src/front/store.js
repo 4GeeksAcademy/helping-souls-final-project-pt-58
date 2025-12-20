@@ -17,9 +17,12 @@ export const initialStore = () => {
     // 🔐 AUTH
     token: localStorage.getItem("token") || null,
     user: JSON.parse(localStorage.getItem("user")) || null,
-    isAuth: !!localStorage.getItem("token")
+    isAuth: !!localStorage.getItem("token"),
+    events: []
   };
 };
+    
+  
 
 export default function storeReducer(store, action = {}) {
   switch (action.type) {
@@ -58,7 +61,27 @@ export default function storeReducer(store, action = {}) {
           todo.id === id ? { ...todo, background: color } : todo
         )
       };
+      ////
+      case "set_event":
 
+      return {
+        ...store,
+        events: action.payload
+      };
+
+      case "add_event":
+
+      return {
+        ...store,
+        events: [...store.events, action.payload]
+      };
+      case "delete_event":
+
+      return {
+        ...store,
+        events: store.events.filter(event => event.eventID !== action.payload)
+      };
+      
     default:
       throw Error("Unknown action.");
   }
