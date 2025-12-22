@@ -1,25 +1,15 @@
 export const initialStore = () => {
+  const token = localStorage.getItem("token");
   return {
     message: null,
 
-    /* ===== DEMO TODOS ===== */
-    todos: [
-      {
-        id: 1,
-        title: "Make the bed",
-        background: null,
-      },
-      {
-        id: 2,
-        title: "Do my homework",
-        background: null,
-      },
-    ],
-
     /* ===== AUTH ===== */
-    token: localStorage.getItem("token") || null,
-    user: JSON.parse(localStorage.getItem("user")) || null,
-    isAuth: !!localStorage.getItem("token"),
+    token: token && token !== "null" && token !== "undefined" ? token : null,
+    user:
+      token && token !== "null" && token !== "undefined"
+        ? JSON.parse(localStorage.getItem("user"))
+        : null,
+    isAuth: token && token !== "null" && token !== "undefined",
 
     /* ===== EVENTS ===== */
     events: [],
@@ -28,7 +18,6 @@ export const initialStore = () => {
 
 export default function storeReducer(store, action = {}) {
   switch (action.type) {
-
     /* ===== AUTH ===== */
 
     case "login_success":

@@ -37,12 +37,12 @@ export const CampaignsBoard = () => {
           },
         });
 
-        // 🔐 Manejo de respuestas de autorización
+        //  Manejo de respuestas de autorización
         if (response.status === 401 || response.status === 403) {
           throw new Error("Unauthorized"); // Usuario no autorizado
         }
 
-        // 🔥 Manejo de otros errores del backend
+        // Manejo de otros errores del backend
         if (!response.ok) {
           const text = await response.text();
           throw new Error(text || "Server error");
@@ -112,7 +112,7 @@ export const CampaignsBoard = () => {
       <div className="d-flex justify-content-between align-items-center mb-4">
         <h2 className="mb-0">Campaigns Board</h2>
 
-        {/* 🔐 Mostrar botón solo si el usuario es organizer */}
+        {/*  Mostrar botón solo si el usuario es organizer */}
         {storeUser?.role === "organizer" && (
           <button
             className="btn btn-success"
