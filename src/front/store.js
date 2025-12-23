@@ -1,88 +1,89 @@
 export const initialStore = () => {
+  const token = localStorage.getItem("token");
   return {
     message: null,
-    todos: [
-      {
-        id: 1,
-        title: "Make the bed",
-        background: null,
-      },
-      {
-        id: 2,
-        title: "Do my homework",
-        background: null,
-      }
-    ],
 
-    // 🔐 AUTH
-    token: localStorage.getItem("token") || null,
-    user: JSON.parse(localStorage.getItem("user")) || null,
-    isAuth: !!localStorage.getItem("token"),
-    events: []
+    /* ===== AUTH ===== */
+    token: token && token !== "null" && token !== "undefined" ? token : null,
+    user:
+      token && token !== "null" && token !== "undefined"
+        ? JSON.parse(localStorage.getItem("user"))
+        : null,
+    isAuth: token && token !== "null" && token !== "undefined",
+
+    /* ===== EVENTS ===== */
+    events: [],
   };
 };
-    
-  
 
 export default function storeReducer(store, action = {}) {
   switch (action.type) {
-
-    /* ====== AUTH ====== */
+    /* ===== AUTH ===== */
 
     case "login_success":
       return {
         ...store,
         token: action.payload.token,
         user: action.payload.user,
-        isAuth: true
+        isAuth: true,
       };
 
     case "logout":
+      localStorage.removeItem("token");
+      localStorage.removeItem("user");
+
       return {
         ...store,
         token: null,
         user: null,
-        isAuth: false
+        isAuth: false,
+        events: [],
       };
 
-    /* ====== EXISTENTE ====== */
+    /* ===== EXISTING ===== */
 
     case "set_hello":
       return {
         ...store,
-        message: action.payload
+        message: action.payload,
       };
 
-    case "add_task":
+    case "add_task": {
       const { id, color } = action.payload;
       return {
         ...store,
-        todos: store.todos.map(todo =>
+        todos: store.todos.map((todo) =>
           todo.id === id ? { ...todo, background: color } : todo
-        )
+        ),
       };
-      ////
-      case "set_event":
+    }
 
+    /* ===== EVENTS ===== */
+
+    case "set_events":
       return {
         ...store,
-        events: action.payload
+        events: action.payload,
       };
 
-      case "add_event":
-
+    case "add_event":
       return {
         ...store,
-        events: [...store.events, action.payload]
+        events: [...store.events, action.payload],
       };
-      case "delete_event":
 
+    case "delete_event":
       return {
         ...store,
-        events: store.events.filter(event => event.eventID !== action.payload)
+        events: store.events.filter(
+          (event) => event.eventID !== action.payload
+        ),
       };
-      
+
+    /* ===== DEFAULT ===== */
+
     default:
-      throw Error("Unknown action.");
+      console.warn("Unknown action:", action.type);
+      return store;
   }
 }

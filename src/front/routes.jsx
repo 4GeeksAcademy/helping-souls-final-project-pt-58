@@ -20,7 +20,8 @@ import { Donations } from "./pages/Donations";
 import { CampaignsBoard } from "./pages/CampaignsBoard";
 import { Success } from "./pages/Success";
 import { Cancel } from "./pages/Cancel";
-import {EventsView} from "./pages/Events";
+import { EventsView } from "./pages/Event";
+
 
 export const router = createBrowserRouter(
   createRoutesFromElements(
@@ -32,7 +33,6 @@ export const router = createBrowserRouter(
       <Route path="login" element={<Login />} />
 
       {/* Events */}
-      <Route path="events" element={<Demo />} />
       <Route path="events/new" element={<CreateEvent />} />
       <Route path="events/:id" element={<Single />} />
       <Route path="campaignsboard" element={<CampaignsBoard/>} />

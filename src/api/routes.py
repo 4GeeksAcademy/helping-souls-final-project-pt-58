@@ -43,53 +43,7 @@ def handle_hello():
 
     return jsonify(response_body), 200
 
-@api.route('/new_events', methods=['POST'])
-@jwt_required()
-def new_event():
-    user_id = get_jwt_identity()
-    organizer = Organizer.query.filter_by(userID=user_id).first()
-    
-    file = request.files.get('image')
-    image_filename = None
-    if file and allowed_file(file.filename):
-        filename = secure_filename(file.filename)
-        os.makedirs(UPLOAD_FOLDER, exist_ok=True)
-        file.save(os.path.join(UPLOAD_FOLDER, filename))
-        image_filename = filename
 
-    data = request.form
-    if not data:
-        return jsonify({"msg": "No data provided"}), 400
-
-    required_fields = ['name', 'event_date', 'location', 'category', 'max_volunteers', 'description']
-    for field in required_fields:
-        if field not in data:
-            return jsonify({"msg": f"Missing field: {field}"}), 400
-
-    organizer = Organizer.query.filter_by(userID=user_id).first()
-    if not organizer:
-            return jsonify({"msg": "User is not an organizer"}), 403
-
-    try:
-        event_date = datetime.fromisoformat(data['event_date']).date()
-    except ValueError:
-        return jsonify({"msg": "Invalid date format"}), 400
-
-    event = Events(
-        organizerID=organizer.organizerID,
-        name=data['name'],
-        event_date=event_date,
-        location=data['location'],
-        category=data['category'],
-        max_volunteers=int(data['max_volunteers']),
-        description=data['description'],
-        #review=data['review'],
-        image=image_filename
-
-    )
-
-    db.session.add(event)
-    db.session.commit()
 
 # LOGIN Y SIGNUP
 
@@ -107,10 +61,24 @@ def login():
 
     access_token = create_access_token(identity=str(user.userID))
 
+    # Obtener rol del usuario
+    role = None
+    organizer = Organizer.query.filter_by(userID=user.userID).first()
+    volunteer = Volunteer.query.filter_by(userID=user.userID).first()
+
+    if organizer:
+        role = "organizer"
+    elif volunteer:
+        role = "volunteer"
+
+    # Serializar usuario y agregar rol
+    user_data = user.serialize()
+    user_data["role"] = role  # ✅ agregamos el rol aquí
+
     return jsonify({
         "msg": "Login successful",
         "token": access_token,
-        "user": user.serialize()
+        "user": user_data
     }), 200
 
 
@@ -190,66 +158,95 @@ def signup():
 # POST Y GET DE EVENTOS
 
 
-@api.route('/new_events', methods=['POST'])
+@api.route("/new_events", methods=["POST"])
 @jwt_required()
 def new_event():
-    # El identity del JWT es directamente el userID
-    user_id = get_jwt_identity()
-
-    data = request.get_json()
-
-    if not data:
-        return jsonify({"msg": "No data provided"}), 400
-
-    required_fields = [
-        'name',
-        'event_date',
-        'location',
-        'category',
-        'max_volunteers',
-        'description'
-    ]
-
-    for field in required_fields:
-        if field not in data:
-            return jsonify({"msg": f"Missing field: {field}"}), 400
-
-    # Verificar que el usuario sea organizador
-    organizer = Organizer.query.filter_by(userID=user_id).first()
-    if not organizer:
-        return jsonify({"msg": "User is not an organizer"}), 403
-
-    # Validar formato de fecha
     try:
-        event_date = datetime.fromisoformat(data['event_date']).date()
-    except ValueError:
-        return jsonify({"msg": "Invalid date format. Use YYYY-MM-DD"}), 400
+        # 🔐 Obtener userID desde el JWT
+        user_id = get_jwt_identity()
 
-    # Crear evento
-    event = Events(
-        organizerID=organizer.organizerID,
-        name=data['name'],
-        event_date=event_date,
-        location=data['location'],
-        category=data['category'],
-        max_volunteers=data['max_volunteers'],
-        description=data['description'],
-        review=data.get('review')
-    )
+        # 🔍 Verificar que el usuario sea organizador
+        organizer = Organizer.query.filter_by(userID=user_id).first()
+        if organizer is None:
+            return jsonify({
+                "msg": "User is not registered as organizer"
+            }), 403
 
-    try:
+        # 📦 Detectar tipo de request
+        if request.content_type and request.content_type.startswith("multipart/form-data"):
+            data = request.form
+            file = request.files.get("image")
+        else:
+            data = request.get_json()
+            file = None
+
+        if not data:
+            return jsonify({"msg": "No data provided"}), 400
+
+        # 📋 Validar campos requeridos
+        required_fields = [
+            "name",
+            "event_date",
+            "location",
+            "category",
+            "max_volunteers",
+            "description"
+        ]
+
+        for field in required_fields:
+            if field not in data or not data[field]:
+                return jsonify({
+                    "msg": f"Missing or empty field: {field}"
+                }), 400
+
+        # 📅 Validar fecha
+        try:
+            event_date = datetime.fromisoformat(data["event_date"]).date()
+        except ValueError:
+            return jsonify({
+                "msg": "Invalid date format. Use YYYY-MM-DD"
+            }), 400
+
+        # 🖼️ Manejo de imagen (opcional)
+        image_filename = None
+        if file:
+            if not allowed_file(file.filename):
+                return jsonify({
+                    "msg": "Invalid image format"
+                }), 400
+
+            filename = secure_filename(file.filename)
+            os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+            file.save(os.path.join(UPLOAD_FOLDER, filename))
+            image_filename = filename
+
+        # 🆕 Crear evento
+        event = Events(
+            organizerID=organizer.organizerID,
+            name=data["name"],
+            event_date=event_date,
+            location=data["location"],
+            category=data["category"],
+            max_volunteers=int(data["max_volunteers"]),
+            description=data["description"],
+            image=image_filename
+        )
+
         db.session.add(event)
         db.session.commit()
 
+        # ✅ Respuesta correcta
         return jsonify({
             "msg": "Event created successfully",
             "event": event.serialize()
         }), 201
 
     except Exception as e:
-        db.session.rollback()
+        # 🔥 Log REAL del error
+        print("🔥 CREATE EVENT ERROR:", e)
+
         return jsonify({
-            "msg": "Error creating event",
+            "msg": "Internal server error",
             "error": str(e)
         }), 500
 
@@ -258,7 +255,7 @@ def new_event():
 @jwt_required()
 def get_all_events():
 
-    user_id = get_jwt_identity()  # por ahora no se filtra, solo valida el token
+    user_id = get_jwt_identity()  # solo valida token
 
     events = Events.query.all()
 
@@ -273,7 +270,6 @@ def get_all_events():
                 "category": event.category,
                 "max_volunteers": event.max_volunteers,
                 "description": event.description,
-                "review": event.review,
                 "organizerID": event.organizerID
             }
             for event in events

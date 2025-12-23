@@ -9,10 +9,10 @@ export const Navbar = () => {
   const handleLogout = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("user");
-
     dispatch({ type: "logout" });
-
     navigate("/login");
+  };
+
   const handleCategory = (category) => {
     alert(`campaign types: ${category}`);
   };
@@ -20,8 +20,6 @@ export const Navbar = () => {
   const handleContact = () => alert("Contact form");
   const handleAboutUs = () => alert("Project description");
   const handleDonations = () => alert("Donations");
-  const handleCategory = (category) =>
-    alert(`campaign types: ${category}`);
 
   return (
     <nav className="navbar navbar-expand-lg bg-body-tertiary">
@@ -35,16 +33,12 @@ export const Navbar = () => {
           type="button"
           data-bs-toggle="collapse"
           data-bs-target="#navbarSupportedContent"
-          aria-controls="navbarSupportedContent"
-          aria-expanded="false"
-          aria-label="Toggle navigation"
         >
           <span className="navbar-toggler-icon"></span>
         </button>
 
         <div className="collapse navbar-collapse" id="navbarSupportedContent">
           <ul className="navbar-nav me-auto mb-2 mb-lg-0">
-            {/* Campaigns (solo logueado) */}
             {store.isAuth && (
               <li className="nav-item">
                 <Link className="nav-link" to="/campaignsboard">
@@ -52,9 +46,10 @@ export const Navbar = () => {
                 </Link>
               </li>
             )}
+
             <li className="nav-item">
               <button className="nav-link btn btn-link" onClick={handleContact}>
-                Contacto
+                Contact
               </button>
             </li>
 
@@ -65,13 +60,8 @@ export const Navbar = () => {
             </li>
 
             <li className="nav-item">
-              <button className="nav-link btn btn-link" onClick={handleDonations}>
+              <Link className="nav-link" to="/donations">
                 Donations
-              </button>
-              <Link to='donations'>  
-                <button className="btn">
-                  Donations
-                </button>
               </Link>
             </li>
 
@@ -101,13 +91,9 @@ export const Navbar = () => {
             </li>
           </ul>
 
-          {/* 🔐 AUTH BUTTONS */}
           <div className="d-flex gap-2 ms-auto">
             {store.isAuth ? (
-              <button
-                className="btn btn-danger"
-                onClick={handleLogout}
-              >
+              <button className="btn btn-danger" onClick={handleLogout}>
                 Log out
               </button>
             ) : (
