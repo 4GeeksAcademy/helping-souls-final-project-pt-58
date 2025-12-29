@@ -21,6 +21,7 @@ import { CampaignsBoard } from "./pages/CampaignsBoard";
 import { Success } from "./pages/Success";
 import { Cancel } from "./pages/Cancel";
 import { EventsView } from "./pages/Event";
+import { DetailedCampaign } from "./pages/DetailedCampaign";
 
 
 export const router = createBrowserRouter(
@@ -37,6 +38,7 @@ export const router = createBrowserRouter(
       <Route path="events/:id" element={<Single />} />
       <Route path="campaignsboard" element={<CampaignsBoard/>} />
       <Route path="/events" element={<EventsView />} />
+      <Route path="/campaigns/:id" element={<DetailedCampaign />} />
 
       {/* Profiles */}
       <Route path="profile/volunteer" element={<VolunteerProfile />} />

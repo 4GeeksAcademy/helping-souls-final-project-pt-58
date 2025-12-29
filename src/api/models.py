@@ -67,7 +67,12 @@ class Inscription(db.Model):
     inscriptionID: Mapped[int]=mapped_column(primary_key=True)
     volunteerID: Mapped[int]=mapped_column(ForeignKey('volunteer.volunteerID'), nullable=False)
     eventID: Mapped[int]=mapped_column(ForeignKey('events.eventID'), nullable=False)
-    status: Mapped[str]=mapped_column(String(120), nullable=False)
+    status: Mapped[str]=mapped_column(String(120), nullable=False, default="pending")
+    message: Mapped[str] = mapped_column(db.Text, nullable=True)
+
+    __table_args__ = (
+        db.UniqueConstraint('volunteerID', 'eventID', name='unique_volunteer_event'),
+    )
 
     def serialize(self):
         return{

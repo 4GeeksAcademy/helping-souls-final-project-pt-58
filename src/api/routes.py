@@ -276,6 +276,32 @@ def get_all_events():
         ]
     }), 200
 
+
+@api.route("/events/<int:event_id>", methods=["GET"])
+@jwt_required()
+def get_event_detail(event_id):
+
+    user_id = get_jwt_identity()  # valida token
+
+    event = Events.query.get(event_id)
+
+    if not event:
+        return jsonify({"msg": "Event not found"}), 404
+
+    return jsonify({
+        "event": {
+            "eventID": event.eventID,
+            "name": event.name,
+            "event_date": event.event_date.isoformat(),
+            "location": event.location,
+            "category": event.category,
+            "max_volunteers": event.max_volunteers,
+            "description": event.description,
+            "organizerID": event.organizerID
+        }
+    }), 200
+
+
 @api.route("/create-checkout-session", methods=["POST"])
 def create_checkout_session():
     data = request.get_json()
@@ -305,3 +331,4 @@ def create_checkout_session():
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+
