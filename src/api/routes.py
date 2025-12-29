@@ -307,55 +307,96 @@ def get_event_detail(event_id):
 @jwt_required()
 def apply_to_event(event_id):
 
+    # 🔐 user.id desde JWT
     user_id = get_jwt_identity()
     data = request.get_json() or {}
 
+    full_name = data.get("fullName")
+    phone = data.get("phone")
+    document_id = data.get("documentId")
     message = data.get("message", "")
 
+    # ===== VALIDACIONES =====
+    if not full_name or not phone or not document_id:
+        return jsonify({
+            "msg": "Missing required fields",
+            "required": ["fullName", "phone", "documentId"]
+        }), 400
+
+    # ===== VALIDAR VOLUNTEER =====
+    volunteer = Volunteer.query.filter_by(userID=user_id).first()
+    if not volunteer:
+        return jsonify({
+            "msg": "User is not registered as volunteer"
+        }), 403
+
+    # ===== VALIDAR EVENTO =====
     event = Events.query.get(event_id)
     if not event:
-        return jsonify({"msg": "Event not found"}), 404
+        return jsonify({
+            "msg": "Event not found"
+        }), 404
 
+    # ===== EVITAR DUPLICADOS =====
     existing = Inscription.query.filter_by(
-        volunteerID=user_id,
+        volunteerID=volunteer.volunteerID,
         eventID=event_id
     ).first()
 
     if existing:
-        return jsonify({"msg": "You are already registered"}), 400
+        return jsonify({
+            "msg": "You are already registered",
+            "inscription": existing.serialize()
+        }), 400
 
+    # ===== CREAR INSCRIPCIÓN =====
     inscription = Inscription(
-        volunteerID=user_id,
+        volunteerID=volunteer.volunteerID,
         eventID=event_id,
-        status="pending",
-        message=message
+        full_name=full_name,
+        phone=phone,
+        document_id=document_id,
+        message=message,
+        status="pending"
     )
 
     db.session.add(inscription)
     db.session.commit()
 
     return jsonify({
+        "success": True,
         "msg": "Successfully applied",
         "inscription": inscription.serialize()
     }), 201
 
 @api.route("/events/<int:event_id>/inscription", methods=["GET"])
 @jwt_required()
-def check_inscription(event_id):
+def get_inscription(event_id):
 
-    volunteer_id = get_jwt_identity()
+    user_id = get_jwt_identity()
+
+    # 🔄 user → volunteer
+    volunteer = Volunteer.query.filter_by(userID=user_id).first()
+    if not volunteer:
+        return jsonify({
+            "isInscribed": False,
+            "inscription": None
+        }), 200
 
     inscription = Inscription.query.filter_by(
-        volunteerID=volunteer_id,
+        volunteerID=volunteer.volunteerID,
         eventID=event_id
     ).first()
 
     if not inscription:
-        return jsonify({"isInscribed": False}), 200
+        return jsonify({
+            "isInscribed": False,
+            "inscription": None
+        }), 200
 
     return jsonify({
         "isInscribed": True,
-        "status": inscription.status
+        "inscription": inscription.serialize()
     }), 200
 
 # Donations
