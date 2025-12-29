@@ -78,7 +78,9 @@ class Inscription(db.Model):
         return{
             'inscriptionID': self.inscriptionID,
             'volunteerID': self.volunteerID,
-            'status': self.status
+            'eventID': self.eventID,
+            'status': self.status,
+            'message': self.message
         }
         
 class Interest(db.Model):

@@ -5,7 +5,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 from flask import Flask, request, jsonify, url_for, Blueprint
-from api.models import db, User, Events, Organizer, Volunteer
+from api.models import db, User, Events, Organizer, Volunteer, Inscription
 from api.utils import generate_sitemap, APIException
 from flask_cors import CORS
 from datetime import datetime
@@ -301,6 +301,64 @@ def get_event_detail(event_id):
         }
     }), 200
 
+# Endpoint para inscripcion a campañas
+
+@api.route("/events/<int:event_id>/apply", methods=["POST"])
+@jwt_required()
+def apply_to_event(event_id):
+
+    user_id = get_jwt_identity()
+    data = request.get_json() or {}
+
+    message = data.get("message", "")
+
+    event = Events.query.get(event_id)
+    if not event:
+        return jsonify({"msg": "Event not found"}), 404
+
+    existing = Inscription.query.filter_by(
+        volunteerID=user_id,
+        eventID=event_id
+    ).first()
+
+    if existing:
+        return jsonify({"msg": "You are already registered"}), 400
+
+    inscription = Inscription(
+        volunteerID=user_id,
+        eventID=event_id,
+        status="pending",
+        message=message
+    )
+
+    db.session.add(inscription)
+    db.session.commit()
+
+    return jsonify({
+        "msg": "Successfully applied",
+        "inscription": inscription.serialize()
+    }), 201
+
+@api.route("/events/<int:event_id>/inscription", methods=["GET"])
+@jwt_required()
+def check_inscription(event_id):
+
+    volunteer_id = get_jwt_identity()
+
+    inscription = Inscription.query.filter_by(
+        volunteerID=volunteer_id,
+        eventID=event_id
+    ).first()
+
+    if not inscription:
+        return jsonify({"isInscribed": False}), 200
+
+    return jsonify({
+        "isInscribed": True,
+        "status": inscription.status
+    }), 200
+
+# Donations
 
 @api.route("/create-checkout-session", methods=["POST"])
 def create_checkout_session():
