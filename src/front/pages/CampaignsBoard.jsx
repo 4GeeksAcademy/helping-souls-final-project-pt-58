@@ -158,9 +158,7 @@ export const CampaignsBoard = () => {
                 <div className="card-footer bg-transparent">
                   <button
                     className="btn btn-outline-primary w-100"
-                    onClick={() =>
-                      navigate(`/campaigns/${campaign.eventID}`)
-                    }
+                    onClick={() => navigate(`/campaigns/${campaign.eventID}`)}
                   >
                     View Details
                   </button>
