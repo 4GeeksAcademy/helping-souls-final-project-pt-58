@@ -62,9 +62,9 @@ export const Navbar = () => {
             </li>
 
             <li className="nav-item">
-              <button className="nav-link btn btn-link" onClick={handleAboutUs}>
+              <Link className="nav-link" to="/aboutus">
                 About Us
-              </button>
+              </Link>
             </li>
 
             <li className="nav-item">
