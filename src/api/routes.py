@@ -1,28 +1,27 @@
 """
 This module takes care of starting the API Server, Loading the DB and Adding the endpoints
 """
+import stripe
+from werkzeug.security import generate_password_hash, check_password_hash
+from flask_jwt_extended import create_access_token, get_jwt_identity,  jwt_required
+from werkzeug.utils import secure_filename
+import os
+from flask_jwt_extended import jwt_required, get_jwt_identity
+from datetime import datetime
+from flask_cors import CORS
+from api.utils import generate_sitemap, APIException
+from api.models import db, User, Events, Organizer, Volunteer, Inscription
+from flask import Flask, request, jsonify, url_for, Blueprint
 from dotenv import load_dotenv
 load_dotenv()
 
-from flask import Flask, request, jsonify, url_for, Blueprint
-from api.models import db, User, Events, Organizer, Volunteer, Inscription
-from api.utils import generate_sitemap, APIException
-from flask_cors import CORS
-from datetime import datetime
-from flask_jwt_extended import jwt_required, get_jwt_identity
-import os
-from werkzeug.utils import secure_filename
 UPLOAD_FOLDER = "uploads"
 ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg", "gif"}
+
 
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
-
-from flask_jwt_extended import create_access_token, get_jwt_identity,  jwt_required
-from werkzeug.security import generate_password_hash, check_password_hash
-import os
-import stripe
 
 stripe.api_key = os.getenv("STRIPE_SECRET_KEY")
 
@@ -42,7 +41,6 @@ def handle_hello():
     }
 
     return jsonify(response_body), 200
-
 
 
 # LOGIN Y SIGNUP
@@ -162,17 +160,17 @@ def signup():
 @jwt_required()
 def new_event():
     try:
-        # 🔐 Obtener userID desde el JWT
+        #  Obtener userID desde el JWT
         user_id = get_jwt_identity()
 
-        # 🔍 Verificar que el usuario sea organizador
+        #  Verificar que el usuario sea organizador
         organizer = Organizer.query.filter_by(userID=user_id).first()
         if organizer is None:
             return jsonify({
                 "msg": "User is not registered as organizer"
             }), 403
 
-        # 📦 Detectar tipo de request
+        #  Detectar tipo de request
         if request.content_type and request.content_type.startswith("multipart/form-data"):
             data = request.form
             file = request.files.get("image")
@@ -183,7 +181,7 @@ def new_event():
         if not data:
             return jsonify({"msg": "No data provided"}), 400
 
-        # 📋 Validar campos requeridos
+        #  Validar campos requeridos
         required_fields = [
             "name",
             "event_date",
@@ -199,7 +197,7 @@ def new_event():
                     "msg": f"Missing or empty field: {field}"
                 }), 400
 
-        # 📅 Validar fecha
+        #  Validar fecha
         try:
             event_date = datetime.fromisoformat(data["event_date"]).date()
         except ValueError:
@@ -207,7 +205,7 @@ def new_event():
                 "msg": "Invalid date format. Use YYYY-MM-DD"
             }), 400
 
-        # 🖼️ Manejo de imagen (opcional)
+        #  Manejo de imagen (opcional)
         image_filename = None
         if file:
             if not allowed_file(file.filename):
@@ -220,7 +218,7 @@ def new_event():
             file.save(os.path.join(UPLOAD_FOLDER, filename))
             image_filename = filename
 
-        # 🆕 Crear evento
+        #  Crear evento
         event = Events(
             organizerID=organizer.organizerID,
             name=data["name"],
@@ -235,15 +233,15 @@ def new_event():
         db.session.add(event)
         db.session.commit()
 
-        # ✅ Respuesta correcta
+        #  Respuesta correcta
         return jsonify({
             "msg": "Event created successfully",
             "event": event.serialize()
         }), 201
 
     except Exception as e:
-        # 🔥 Log REAL del error
-        print("🔥 CREATE EVENT ERROR:", e)
+        #  Log REAL del error
+        print(" CREATE EVENT ERROR:", e)
 
         return jsonify({
             "msg": "Internal server error",
@@ -301,7 +299,8 @@ def get_event_detail(event_id):
         }
     }), 200
 
-# Endpoint para inscripcion a campañas
+# Endpoints para inscripcion a campañas
+
 
 @api.route("/events/<int:event_id>/apply", methods=["POST"])
 @jwt_required()
@@ -369,6 +368,9 @@ def apply_to_event(event_id):
         "inscription": inscription.serialize()
     }), 201
 
+# endpoint para que volunteer sepa si ya esta inscrito o no
+
+
 @api.route("/events/<int:event_id>/inscription", methods=["GET"])
 @jwt_required()
 def get_inscription(event_id):
@@ -399,7 +401,109 @@ def get_inscription(event_id):
         "inscription": inscription.serialize()
     }), 200
 
+# endpoint para mostar al organizer la informacion de las personas inscritas
+
+
+@api.route("/events/<int:event_id>/inscriptions", methods=["GET"])
+@jwt_required()
+def get_event_inscriptions(event_id):
+
+    user_id = get_jwt_identity()
+
+    # Validar organizer
+    organizer = Organizer.query.filter_by(userID=user_id).first()
+    if not organizer:
+        return jsonify({"msg": "User is not registered as organizer"}), 403
+
+    # Validar evento
+    event = Events.query.get(event_id)
+    if not event:
+        return jsonify({"msg": "Event not found"}), 404
+
+    # Verificar que el evento pertenece al organizer
+    if event.organizerID != organizer.organizerID:
+        return jsonify({"msg": "Not authorized"}), 403
+
+    # Join Inscription -> Volunteer -> User
+    results = (
+        db.session.query(Inscription, Volunteer, User)
+        .join(Volunteer, Volunteer.volunteerID == Inscription.volunteerID)
+        .join(User, User.userID == Volunteer.userID)
+        .filter(Inscription.eventID == event_id)
+        .all()
+    )
+
+    return jsonify({
+        "total": len(results),
+        "inscriptions": [
+            {
+                "inscriptionID": inscription.inscriptionID,
+                "status": inscription.status,
+                "full_name": inscription.full_name,
+                "phone": inscription.phone,
+                "document_id": inscription.document_id,
+                "message": inscription.message,
+                "email": user.email,
+                "volunteerID": volunteer.volunteerID
+            }
+            for inscription, volunteer, user in results
+        ]
+    }), 200
+
+#endpoint para aprovar o rechazar solicitudes de inscripcion
+
+@api.route("/inscriptions/<int:inscription_id>", methods=["PUT"])
+@jwt_required()
+def update_inscription(inscription_id):
+    # Obtiene el userID desde el token JWT
+    user_id = get_jwt_identity()
+
+    # Lee el body de la petición
+    data = request.get_json()
+
+    # Valida que venga el campo "status"
+    if not data or "status" not in data:
+        return jsonify({"msg": "Status is required"}), 400
+
+    # Valida que el status sea uno permitido
+    if data["status"] not in ["approved", "rejected"]:
+        return jsonify({"msg": "Invalid status"}), 400
+
+    # Busca la inscripción por ID
+    inscription = Inscription.query.get(inscription_id)
+    if not inscription:
+        return jsonify({"msg": "Inscription not found"}), 404
+
+    # Busca el evento asociado a la inscripción
+    event = Events.query.get(inscription.eventID)
+    if not event:
+        return jsonify({"msg": "Event not found"}), 404
+
+    # Verifica que el usuario sea un organizador
+    organizer = Organizer.query.filter_by(userID=user_id).first()
+    if not organizer:
+        return jsonify({"msg": "Not an organizer"}), 403
+
+    # Verifica que el organizador sea dueño del evento
+    if event.organizerID != organizer.organizerID:
+        return jsonify({"msg": "Not authorized to update this inscription"}), 403
+
+    # Actualiza el estado de la inscripción
+    inscription.status = data["status"]
+
+    # Guarda los cambios en la base de datos
+    db.session.commit()
+
+    # Respuesta exitosa
+    return jsonify({
+        "msg": "Inscription updated successfully",
+        "inscriptionID": inscription.inscriptionID,
+        "status": inscription.status
+    }), 200
+
+
 # Donations
+
 
 @api.route("/create-checkout-session", methods=["POST"])
 def create_checkout_session():
@@ -430,4 +534,3 @@ def create_checkout_session():
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500
-

@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import useGlobalReducer from "../hooks/useGlobalReducer";
+import { EventInscriptions } from "../components/EventInscriptions";
 
 export const DetailedCampaign = () => {
   const { id } = useParams(); // eventID
@@ -136,14 +137,18 @@ export const DetailedCampaign = () => {
           {/* ===== ACTIONS ===== */}
           <hr />
 
-          {/* 👤 ORGANIZER */}
+          {/*  ORGANIZER */}
           {store.user?.role === "organizer" && (
-            <div className="alert alert-info">
-              You are the organizer of this campaign.
-            </div>
+            <>
+              <div className="alert alert-info">
+                You are the organizer of this campaign.
+              </div>
+
+              <EventInscriptions eventId={campaign.eventID} />
+            </>
           )}
 
-          {/* 🙋 VOLUNTEER */}
+          {/*  VOLUNTEER */}
           {store.user?.role === "volunteer" && (
             <>
               {!isInscribed ? (
