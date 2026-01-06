@@ -62,20 +62,35 @@ class Volunteer(db.Model):
         }
     
 class Inscription(db.Model):
-    __tablename__='inscription'
+    __tablename__ = "inscription"
 
-    inscriptionID: Mapped[int]=mapped_column(primary_key=True)
-    volunteerID: Mapped[int]=mapped_column(ForeignKey('volunteer.volunteerID'), nullable=False)
-    eventID: Mapped[int]=mapped_column(ForeignKey('events.eventID'), nullable=False)
-    status: Mapped[str]=mapped_column(String(120), nullable=False)
+    inscriptionID = db.Column(db.Integer, primary_key=True)
+    volunteerID = db.Column(db.Integer, db.ForeignKey("volunteer.volunteerID"), nullable=False)
+    eventID = db.Column(db.Integer, db.ForeignKey("events.eventID"), nullable=False)
+
+    full_name = db.Column(db.String(120), nullable=False)
+    phone = db.Column(db.String(50), nullable=False)
+    document_id = db.Column(db.String(50), nullable=False)
+    message = db.Column(db.Text, nullable=True)
+
+    status = db.Column(db.String(50), default="pending")
+
+    __table_args__ = (
+        db.UniqueConstraint("volunteerID", "eventID", name="unique_volunteer_event"),
+    )
 
     def serialize(self):
-        return{
-            'inscriptionID': self.inscriptionID,
-            'volunteerID': self.volunteerID,
-            'status': self.status
+        return {
+            "inscriptionID": self.inscriptionID,
+            "eventID": self.eventID,
+            "volunteerID": self.volunteerID,
+            "fullName": self.full_name,
+            "phone": self.phone,
+            "documentId": self.document_id,
+            "message": self.message,
+            "status": self.status
         }
-        
+    
 class Interest(db.Model):
     __tablename__='interest'
 

@@ -1,5 +1,4 @@
 import React, { useState } from "react";
-import axios from "axios";
 
 export const ContactView = () => {
   const backendUrl = import.meta.env.VITE_BACKEND_URL;
@@ -21,11 +20,23 @@ export const ContactView = () => {
     setLoading(true);
 
     try {
-      const response = await axios.post(`${backendUrl}/api/contact`, form);
+       const response = await fetch(`${backendUrl}/api/contact`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(form)
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.msg || "Failed to send message");
+      }
 
       setStatus("Message sent successfully!");
       setForm({ name: "", email: "", message: "" });
-      console.log("Response:", response.data);
+      console.log("Response:", data);
     } catch (err) {
       console.error("Contact form error:", err);
       setStatus("Failed to send message. Please try again.");
@@ -33,6 +44,7 @@ export const ContactView = () => {
       setLoading(false);
     }
   };
+
 
   return (
     <div className="container mt-4" style={{ maxWidth: "600px" }}>

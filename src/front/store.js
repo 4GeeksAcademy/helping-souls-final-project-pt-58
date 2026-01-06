@@ -13,6 +13,8 @@ export const initialStore = () => {
 
     /* ===== EVENTS ===== */
     events: [],
+
+    contactMessages: [],
   };
 };
 
@@ -77,6 +79,27 @@ export default function storeReducer(store, action = {}) {
         ...store,
         events: store.events.filter(
           (event) => event.eventID !== action.payload
+        ),
+      };
+
+    /* ===== CONTACT ===== */
+    case "set_contact_messages":
+      return {
+        ...store,
+        contactMessages: action.payload,
+      };
+
+    case "add_contact_message":
+      return {
+        ...store,
+        contactMessages: [...store.contactMessages, action.payload],
+      };
+
+    case "delete_contact_message":
+      return {
+        ...store,
+        contactMessages: store.contactMessages.filter(
+          (msg) => msg.id !== action.payload 
         ),
       };
 
