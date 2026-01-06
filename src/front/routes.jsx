@@ -21,6 +21,7 @@ import { CampaignsBoard } from "./pages/CampaignsBoard";
 import { Success } from "./pages/Success";
 import { Cancel } from "./pages/Cancel";
 import { EventsView } from "./pages/Event";
+import { AboutUs } from "./pages/AboutUs";
 
 
 export const router = createBrowserRouter(
@@ -46,6 +47,10 @@ export const router = createBrowserRouter(
       <Route path="donations" element={<Donations />} />
       <Route path="success" element={<Success />} />
       <Route path="cancel" element={<Cancel />} />
+
+      {/* Others */}
+      <Route path="aboutus" element={<AboutUs />} />
+
     </Route>
   )
 );
