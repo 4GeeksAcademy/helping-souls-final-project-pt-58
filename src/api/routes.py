@@ -305,3 +305,47 @@ def create_checkout_session():
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+
+# FORMULARIO DE CONTACTO
+@api.route("/contact", methods=["POST"])
+def contact():
+    try:
+        #verificar data
+        if request.content_type and request.content_type.startswith("multipart/form-data"):
+            data = request.form
+        else:
+            data = request.get_json()
+
+        if not data:
+            return jsonify({"msg": "No data provided"}), 400
+        #campos requeridos
+        required_fields = ["name", "email", "message"]
+        for field in required_fields:
+            if field not in data or not data[field].strip():
+                return jsonify({"msg": f"Missing or empty field: {field}"}), 400
+        #guardar datos
+        from api.models import ContactMessage
+        contact_message = ContactMessage(
+            name=data["name"].strip(),
+            email=data["email"].strip(),
+            message=data["message"].strip()
+        )
+
+        db.session.add(contact_message)
+        db.session.commit()
+
+        return jsonify({
+            "msg": "Message sent successfully",
+            "contact": {
+                "name": contact_message.name,
+                "email": contact_message.email,
+                "message": contact_message.message
+            }
+        }), 201
+
+    except Exception as e:
+        print("🔥 CONTACT FORM ERROR:", e)
+        return jsonify({
+            "msg": "Internal server error",
+            "error": str(e)
+        }), 500
