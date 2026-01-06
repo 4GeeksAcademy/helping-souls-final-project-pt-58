@@ -5,7 +5,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 from flask import Flask, request, jsonify, url_for, Blueprint
-from api.models import db, User, Events, Organizer, Volunteer
+from api.models import db, User, Events, Organizer, Volunteer, ContactMessage
 from api.utils import generate_sitemap, APIException
 from flask_cors import CORS
 from datetime import datetime
@@ -324,7 +324,6 @@ def contact():
             if field not in data or not data[field].strip():
                 return jsonify({"msg": f"Missing or empty field: {field}"}), 400
         #guardar datos
-        from api.models import ContactMessage
         contact_message = ContactMessage(
             name=data["name"].strip(),
             email=data["email"].strip(),
@@ -336,11 +335,7 @@ def contact():
 
         return jsonify({
             "msg": "Message sent successfully",
-            "contact": {
-                "name": contact_message.name,
-                "email": contact_message.email,
-                "message": contact_message.message
-            }
+            "contact": contact_message.serialize()
         }), 201
 
     except Exception as e:
