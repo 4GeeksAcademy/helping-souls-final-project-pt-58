@@ -4,7 +4,7 @@ import useGlobalReducer from "../hooks/useGlobalReducer";
 import { EventInscriptions } from "../components/EventInscriptions";
 
 export const DetailedCampaign = () => {
-  const { id } = useParams(); // eventID
+  const { id } = useParams();
   const navigate = useNavigate();
   const { store } = useGlobalReducer();
 
@@ -12,23 +12,26 @@ export const DetailedCampaign = () => {
   const [campaign, setCampaign] = useState(null);
   const [inscription, setInscription] = useState(null);
   const [isInscribed, setIsInscribed] = useState(false);
+  const [isInterested, setIsInterested] = useState(false);
+
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [interestLoading, setInterestLoading] = useState(false);
 
   /* ===== AUTH GUARD ===== */
   useEffect(() => {
-    if (!store.isAuth || !store.token) {
+    if (!store.token || !store.isAuth) {
       navigate("/login");
     }
-  }, [store.isAuth, store.token, navigate]);
+  }, [store.token, store.isAuth, navigate]);
 
-  /* ===== FETCH CAMPAIGN + INSCRIPTION ===== */
+  /* ===== FETCH CAMPAIGN + STATUS ===== */
   useEffect(() => {
     const fetchData = async () => {
       try {
         const backendUrl = import.meta.env.VITE_BACKEND_URL;
 
-        // 1️⃣ Obtener campaña
+        /* Obtener campaña */
         const campaignRes = await fetch(
           `${backendUrl}/api/events/${id}`,
           {
@@ -38,12 +41,14 @@ export const DetailedCampaign = () => {
           }
         );
 
-        if (!campaignRes.ok) throw new Error("Campaign not found");
+        if (!campaignRes.ok) {
+          throw new Error("Campaign not found");
+        }
 
         const campaignData = await campaignRes.json();
         setCampaign(campaignData.event);
 
-        // 2️⃣ Verificar inscripción (solo voluntarios)
+        /* Verificar inscripción (solo volunteer) */
         if (store.user?.role === "volunteer") {
           const inscriptionRes = await fetch(
             `${backendUrl}/api/events/${id}/inscription`,
@@ -60,6 +65,19 @@ export const DetailedCampaign = () => {
             setIsInscribed(true);
             setInscription(inscriptionData.inscription);
           }
+
+          /* Verificar interés */
+          const interestRes = await fetch(
+            `${backendUrl}/api/events/${id}/interest`,
+            {
+              headers: {
+                Authorization: `Bearer ${store.token}`,
+              },
+            }
+          );
+
+          const interestData = await interestRes.json();
+          setIsInterested(interestData.isInterested);
         }
       } catch (err) {
         console.error(err);
@@ -72,7 +90,36 @@ export const DetailedCampaign = () => {
     fetchData();
   }, [id, store.token, store.user]);
 
-  /* ===== STATES ===== */
+  /* ===== HANDLER: ME INTERESA ===== */
+  const handleInterest = async () => {
+    try {
+      setInterestLoading(true);
+      const backendUrl = import.meta.env.VITE_BACKEND_URL;
+
+      const res = await fetch(
+        `${backendUrl}/api/events/${id}/interest`,
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${store.token}`,
+          },
+        }
+      );
+
+      if (!res.ok) {
+        throw new Error("Failed to save interest");
+      }
+
+      setIsInterested(true);
+    } catch (err) {
+      console.error(err);
+      alert("Error saving interest");
+    } finally {
+      setInterestLoading(false);
+    }
+  };
+
+  /* ===== LOADING / ERROR ===== */
   if (loading) {
     return <p className="text-center mt-4">Loading campaign...</p>;
   }
@@ -96,8 +143,7 @@ export const DetailedCampaign = () => {
   /* ===== MAIN VIEW ===== */
   return (
     <div className="container mt-4">
-
-      {/* ===== BACK BUTTON ===== */}
+      {/* Back */}
       <button
         className="btn btn-outline-secondary mb-4"
         onClick={() => navigate("/campaignsboard")}
@@ -107,18 +153,26 @@ export const DetailedCampaign = () => {
 
       <div className="card shadow">
         <div className="card-body">
-
-          {/* ===== TITLE ===== */}
+          {/* Title */}
           <h2 className="card-title mb-2">{campaign.name}</h2>
 
-          {/* ===== CATEGORY ===== */}
+          {/* Category */}
           {campaign.category && (
             <span className="badge bg-success mb-3">
               {campaign.category}
             </span>
           )}
 
-          {/* ===== INFO ===== */}
+          {/* Image */}
+          {campaign.image && (
+            <img
+              src={`${import.meta.env.VITE_BACKEND_URL}/uploads/${campaign.image}`}
+              alt={campaign.name}
+              className="img-fluid rounded mb-3"
+            />
+          )}
+
+          {/* Info */}
           <p><strong>Date:</strong> {campaign.event_date}</p>
           <p><strong>Location:</strong> {campaign.location}</p>
           <p>
@@ -126,7 +180,7 @@ export const DetailedCampaign = () => {
             {campaign.max_volunteers ?? "Unlimited"}
           </p>
 
-          {/* ===== DESCRIPTION ===== */}
+          {/* Description */}
           {campaign.description && (
             <>
               <hr />
@@ -134,32 +188,45 @@ export const DetailedCampaign = () => {
             </>
           )}
 
-          {/* ===== ACTIONS ===== */}
           <hr />
 
-          {/*  ORGANIZER */}
+          {/* ORGANIZER VIEW */}
           {store.user?.role === "organizer" && (
             <>
               <div className="alert alert-info">
                 You are the organizer of this campaign.
               </div>
 
-              <EventInscriptions eventId={campaign.eventID} />
+              <EventInscriptions eventId={id} />
             </>
           )}
 
-          {/*  VOLUNTEER */}
+          {/* VOLUNTEER VIEW */}
           {store.user?.role === "volunteer" && (
             <>
               {!isInscribed ? (
-                <button
-                  className="btn btn-primary"
-                  onClick={() =>
-                    navigate(`/campaigns/${id}/apply`)
-                  }
-                >
-                  Inscribirse
-                </button>
+                <div className="d-flex gap-2">
+                  <button
+                    className="btn btn-primary"
+                    onClick={() => navigate(`/campaigns/${id}/apply`)}
+                  >
+                    Register
+                  </button>
+
+                  {!isInterested ? (
+                    <button
+                      className="btn btn-outline-warning fw-semibold text-dark border-2"
+                      onClick={handleInterest}
+                      disabled={interestLoading}
+                    >
+                      {interestLoading ? "Saving..." : "Save for later"}
+                    </button>
+                  ) : (
+                    <span className="badge bg-warning text-dark align-self-center">
+                      Saved in My Interests
+                    </span>
+                  )}
+                </div>
               ) : (
                 <div className="alert alert-success">
                   <strong>You are already registered</strong>

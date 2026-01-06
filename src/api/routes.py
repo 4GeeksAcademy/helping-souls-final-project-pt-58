@@ -10,7 +10,7 @@ from flask_jwt_extended import jwt_required, get_jwt_identity
 from datetime import datetime
 from flask_cors import CORS
 from api.utils import generate_sitemap, APIException
-from api.models import db, User, Events, Organizer, Volunteer, Inscription
+from api.models import db, User, Events, Organizer, Volunteer, Inscription, Interest
 from flask import Flask, request, jsonify, url_for, Blueprint
 from dotenv import load_dotenv
 load_dotenv()
@@ -500,6 +500,110 @@ def update_inscription(inscription_id):
         "inscriptionID": inscription.inscriptionID,
         "status": inscription.status
     }), 200
+
+#Endpoints para boton de Me interesa.-----------------------------------------
+
+@api.route("/events/<int:event_id>/interest", methods=["POST"])
+@jwt_required()
+def add_interest(event_id):
+    """
+    Permite a un usuario marcar un evento como 'me interesa'
+    """
+
+    user_id = get_jwt_identity()
+
+    # Verificar que el evento exista
+    event = Events.query.get(event_id)
+    if not event:
+        return jsonify({"msg": "Event not found"}), 404
+
+    # Evitar duplicados
+    existing = Interest.query.filter_by(
+        userID=user_id,
+        fav_event=event_id
+    ).first()
+
+    if existing:
+        return jsonify({
+            "msg": "Event already marked as interested",
+            "interest": existing.serialize()
+        }), 200
+
+    # Crear interés
+    interest = Interest(
+        userID=user_id,
+        fav_event=event_id
+    )
+
+    db.session.add(interest)
+    db.session.commit()
+
+    return jsonify({
+        "msg": "Event saved as interested",
+        "interest": interest.serialize()
+    }), 201
+
+@api.route("/events/<int:event_id>/interest", methods=["GET"])
+@jwt_required()
+def get_interest(event_id):
+    """
+    Indica si el usuario ya marcó este evento como 'me interesa'
+    """
+
+    user_id = get_jwt_identity()
+
+    interest = Interest.query.filter_by(
+        userID=user_id,
+        fav_event=event_id
+    ).first()
+
+    return jsonify({
+        "isInterested": interest is not None
+    }), 200
+
+@api.route("/my/interests", methods=["GET"])
+@jwt_required()
+def get_my_interests():
+    """
+    Devuelve todos los eventos que el usuario marcó como 'me interesa'
+    """
+
+    user_id = get_jwt_identity()
+
+    events = (
+        db.session.query(Events)
+        .join(Interest, Interest.fav_event == Events.eventID)
+        .filter(Interest.userID == user_id)
+        .all()
+    )
+
+    return jsonify({
+        "total": len(events),
+        "events": [event.serialize() for event in events]
+    }), 200
+
+
+@api.route("/events/<int:event_id>/interest", methods=["DELETE"])
+@jwt_required()
+def remove_interest(event_id):
+    """
+    Elimina un evento de la lista 'me interesa'
+    """
+
+    user_id = get_jwt_identity()
+
+    interest = Interest.query.filter_by(
+        userID=user_id,
+        fav_event=event_id
+    ).first()
+
+    if not interest:
+        return jsonify({"msg": "Interest not found"}), 404
+
+    db.session.delete(interest)
+    db.session.commit()
+
+    return jsonify({"msg": "Interest removed"}), 200
 
 
 # Donations
