@@ -56,9 +56,9 @@ export const Navbar = () => {
             )}
 
             <li className="nav-item">
-              <button className="nav-link btn btn-link" onClick={handleContact}>
+              <Link className="nav-link" to="/contact">
                 Contact
-              </button>
+              </Link>
             </li>
 
             <li className="nav-item">

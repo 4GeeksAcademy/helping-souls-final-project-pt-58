@@ -15,6 +15,14 @@ from flask import Flask, request, jsonify, url_for, Blueprint
 from dotenv import load_dotenv
 load_dotenv()
 
+from flask import Flask, request, jsonify, url_for, Blueprint
+from api.models import db, User, Events, Organizer, Volunteer, ContactMessage
+from api.utils import generate_sitemap, APIException
+from flask_cors import CORS
+from datetime import datetime
+from flask_jwt_extended import jwt_required, get_jwt_identity
+import os
+from werkzeug.utils import secure_filename
 UPLOAD_FOLDER = "uploads"
 ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg", "gif"}
 
@@ -638,3 +646,42 @@ def create_checkout_session():
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+
+# FORMULARIO DE CONTACTO
+@api.route("/contact", methods=["POST"])
+def contact():
+    try:
+        #verificar data
+        if request.content_type and request.content_type.startswith("multipart/form-data"):
+            data = request.form
+        else:
+            data = request.get_json()
+
+        if not data:
+            return jsonify({"msg": "No data provided"}), 400
+        #campos requeridos
+        required_fields = ["name", "email", "message"]
+        for field in required_fields:
+            if field not in data or not data[field].strip():
+                return jsonify({"msg": f"Missing or empty field: {field}"}), 400
+        #guardar datos
+        contact_message = ContactMessage(
+            name=data["name"].strip(),
+            email=data["email"].strip(),
+            message=data["message"].strip()
+        )
+
+        db.session.add(contact_message)
+        db.session.commit()
+
+        return jsonify({
+            "msg": "Message sent successfully",
+            "contact": contact_message.serialize()
+        }), 201
+
+    except Exception as e:
+        print("🔥 CONTACT FORM ERROR:", e)
+        return jsonify({
+            "msg": "Internal server error",
+            "error": str(e)
+        }), 500

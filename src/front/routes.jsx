@@ -25,6 +25,7 @@ import { DetailedCampaign } from "./pages/DetailedCampaign";
 import { ApplyToCampaign } from "./pages/ApplytoCampaign";
 import { MyInterestsView } from "./pages/MyInterestsView";
 import { AboutUs } from "./pages/AboutUs";
+import { ContactView } from "./pages/Contact";
 
 
 export const router = createBrowserRouter(
@@ -57,6 +58,7 @@ export const router = createBrowserRouter(
 
       {/* Others */}
       <Route path="aboutus" element={<AboutUs />} />
+      <Route path="contact" element={<ContactView />} />
 
     </Route>
   )
