@@ -13,10 +13,12 @@ export const EventFilters = () => {
 
   const update = (patch) => {
     const next = new URLSearchParams(params);
-    Object.entries(patch).forEach(([k, v]) => {
-      if (!v) next.delete(k);
-      else next.set(k, v);
+
+    Object.entries(patch).forEach(([key, value]) => {
+      if (!value) next.delete(key);
+      else next.set(key, value);
     });
+
     setParams(next);
   };
 
