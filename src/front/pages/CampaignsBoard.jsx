@@ -5,13 +5,11 @@ import { EventFilters } from "../components/EventFilters";
 export const CampaignsBoard = () => {
   const navigate = useNavigate();
 
-  // ===== ESTADOS LOCALES =====
   const [campaigns, setCampaigns] = useState([]);
   const [loading, setLoading] = useState(true);
   const [isAuthorized, setIsAuthorized] = useState(true);
   const [error, setError] = useState(null);
 
-  // ===== FILTROS DESDE URL =====
   const [params] = useSearchParams();
   const category = (params.get("category") || "").toLowerCase();
   const location = (params.get("location") || "").toLowerCase();
@@ -21,12 +19,10 @@ export const CampaignsBoard = () => {
   const storedUser = localStorage.getItem("user");
   const storeUser = storedUser ? JSON.parse(storedUser) : null;
 
-  // helper para fechas (YYYY-MM-DD)
   const toDate = (s) => (s ? new Date(`${s}T00:00:00`) : null);
   const fromDate = toDate(from);
   const toDateObj = toDate(to);
 
-  // ===== USEEFFECT: CARGA DE CAMPAÑAS =====
   useEffect(() => {
     const token = localStorage.getItem("token");
 
@@ -67,24 +63,20 @@ export const CampaignsBoard = () => {
     fetchCampaigns();
   }, []);
 
-  // ===== APLICAR FILTROS (FRONTEND) =====
   const filteredCampaigns = campaigns.filter((c) => {
-    // Category: match exact (case-insensitive)
     if (category) {
       const cCat = (c.category || "").toLowerCase();
-      if (cCat !== category) return false;
+      if (!cCat.includes(category)) return false; // ✅ tolerante
     }
 
-    // Location: substring match (case-insensitive)
     if (location) {
       const cLoc = (c.location || "").toLowerCase();
       if (!cLoc.includes(location)) return false;
     }
 
-    // Date range
     if (fromDate || toDateObj) {
       if (!c.event_date) return false;
-      const eventDate = toDate(c.event_date);
+      const eventDate = toDate(String(c.event_date).slice(0, 10));
       if (!eventDate) return false;
 
       if (fromDate && eventDate < fromDate) return false;
@@ -94,9 +86,6 @@ export const CampaignsBoard = () => {
     return true;
   });
 
-  /* =========================
-       RENDER ESTADOS ESPECIALES
-     ========================= */
   if (loading) return <p className="text-center mt-4">Loading campaigns...</p>;
 
   if (!isAuthorized) {
@@ -118,12 +107,8 @@ export const CampaignsBoard = () => {
     );
   }
 
-  /* =========================
-       MAIN VIEW
-     ========================= */
   return (
     <div className="container mt-4">
-      {/* HEADER + BOTÓN CREAR */}
       <div className="d-flex justify-content-between align-items-center mb-3">
         <h2 className="mb-0">Campaigns Board</h2>
 
@@ -134,10 +119,17 @@ export const CampaignsBoard = () => {
         )}
       </div>
 
-      {/* ✅ FILTROS AQUÍ */}
+      <div className="d-flex justify-content-between align-items-center mb-2">
+        <small className="text-muted">
+          Filters active: {["category", "location", "from", "to"].filter((k) => params.get(k)).length}
+        </small>
+        <small className="text-muted">
+          Showing {filteredCampaigns.length} / {campaigns.length}
+        </small>
+      </div>
+
       <EventFilters />
 
-      {/* GRID */}
       {filteredCampaigns.length === 0 ? (
         <p className="text-center">No campaigns match your filters</p>
       ) : (
