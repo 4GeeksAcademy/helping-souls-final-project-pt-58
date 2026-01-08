@@ -1,14 +1,8 @@
 """empty message
 
-<<<<<<<< HEAD:migrations/versions/1dddbd579bcf_.py
-Revision ID: 1dddbd579bcf
+Revision ID: 6dc647320fb0
 Revises: 
-Create Date: 2026-01-08 05:21:45.457735
-========
-Revision ID: 55b6002ff375
-Revises: 
-Create Date: 2026-01-08 02:02:43.840069
->>>>>>>> a3257bab3577b9c98aaa24d57d3f3bf3008319dd:migrations/versions/55b6002ff375_.py
+Create Date: 2026-01-08 04:04:17.166316
 
 """
 from alembic import op
@@ -16,11 +10,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-<<<<<<<< HEAD:migrations/versions/1dddbd579bcf_.py
-revision = '1dddbd579bcf'
-========
-revision = '55b6002ff375'
->>>>>>>> a3257bab3577b9c98aaa24d57d3f3bf3008319dd:migrations/versions/55b6002ff375_.py
+revision = '6dc647320fb0'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -72,7 +62,7 @@ def upgrade():
     sa.Column('description', sa.String(length=320), nullable=False),
     sa.Column('location', sa.String(length=200), nullable=False),
     sa.Column('max_volunteers', sa.Integer(), nullable=False),
-    sa.Column('image', sa.String(length=800), nullable=True),
+    sa.Column('image', sa.String(length=200), nullable=True),
     sa.ForeignKeyConstraint(['organizerID'], ['organizer.organizerID'], ),
     sa.PrimaryKeyConstraint('eventID')
     )

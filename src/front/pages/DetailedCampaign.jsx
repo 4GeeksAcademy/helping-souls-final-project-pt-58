@@ -111,7 +111,21 @@ export const DetailedCampaign = () => {
 
       <div className="card shadow">
         <div className="card-body">
-          <h2>{campaign.name}</h2>
+          {/* Title */}
+          <div className="d-flex justify-content-between align-items-start">
+            <h2 className="card-title mb-2">{campaign.name}</h2>
+
+            {store.user?.role === "organizer" && (
+              <button
+                className="btn btn-sm btn-outline-primary"
+                onClick={() => navigate(`/campaigns/${id}/edit`)}
+                title="Edit campaign"
+              >
+                ✏️ Edit
+              </button>
+            )}
+          </div>
+
 
           {/* CATEGORY */}
           {campaign.category && (

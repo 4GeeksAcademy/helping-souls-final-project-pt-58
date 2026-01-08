@@ -26,6 +26,7 @@ export const EventsView = () => {
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
   const [unauthorized, setUnauthorized] = useState(false);
+  const [showCategoryModal, setShowCategoryModal] = useState(false);
 
   /* =========================
      RESTRICCIÓN POR ROL
@@ -165,14 +166,46 @@ export const EventsView = () => {
           required
         />
 
-        <input
-          className="form-control mb-2"
-          name="category"
-          placeholder="Category"
-          value={form.category}
-          onChange={handleChange}
-          required
-        />
+        <button
+          type="button"
+          className="form-control mb-2 text-start"
+          onClick={() => setShowCategoryModal(true)}
+        >
+          {form.category ? `Category: ${form.category}` : "Select category"}
+        </button>
+
+        {showCategoryModal && (
+          <div className="modal fade show d-block" tabIndex="-1">
+            <div className="modal-dialog modal-dialog-centered">
+              <div className="modal-content">
+                <div className="modal-header">
+                  <h5 className="modal-title">Select category</h5>
+                  <button
+                    type="button"
+                    className="btn-close"
+                    onClick={() => setShowCategoryModal(false)}
+                  />
+                </div>
+                <div className="modal-body">
+                  {["Animals", "Environment", "Seniors", "Children", "Collection"].map(
+                    cat => (
+                      <button
+                        key={cat}
+                        className="btn btn-outline-primary w-100 mb-2"
+                        onClick={() => {
+                          setForm({ ...form, category: cat });
+                          setShowCategoryModal(false);
+                        }}
+                      >
+                        {cat}
+                      </button>
+                    )
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
 
         <input
           type="number"
@@ -208,20 +241,6 @@ export const EventsView = () => {
       <Link to="/campaignsboard" className="btn btn-outline-secondary mb-4">
         Back to Campaigns
       </Link>
-
-      <h3>Events</h3>
-
-      {store.events.length === 0 ? (
-        <p>No events available</p>
-      ) : (
-        store.events.map(event => (
-          <FormNewEvent
-            key={event.eventID}
-            information={event}
-            eliminar={handleDelete}
-          />
-        ))
-      )}
     </div>
   );
 };

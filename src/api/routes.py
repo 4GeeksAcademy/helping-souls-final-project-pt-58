@@ -288,6 +288,49 @@ def new_event():
             "error": str(e)
         }), 500
 
+#  Editar evento
+
+@api.route("/events/<int:event_id>", methods=["PUT"])
+@jwt_required()
+def update_event(event_id):
+    user_id = get_jwt_identity()
+    data = request.get_json() or {}
+
+    # 1) Validar organizer
+    organizer = Organizer.query.filter_by(userID=user_id).first()
+    if not organizer:
+        return jsonify({"msg": "User is not registered as organizer"}), 403
+
+    # 2) Buscar evento
+    event = Events.query.get(event_id)
+    if not event:
+        return jsonify({"msg": "Event not found"}), 404
+
+    # 3) Verificar que sea dueño del evento
+    if event.organizerID != organizer.organizerID:
+        return jsonify({"msg": "Not authorized to edit this event"}), 403
+
+    # 4) Actualizar campos si vienen en el body
+    if "name" in data: event.name = data["name"]
+    if "event_date" in data:
+        try:
+            event.event_date = datetime.fromisoformat(data["event_date"]).date()
+        except ValueError:
+            return jsonify({"msg": "Invalid date format. Use YYYY-MM-DD"}), 400
+    if "location" in data: event.location = data["location"]
+    if "category" in data: event.category = data["category"]
+    if "max_volunteers" in data:
+        event.max_volunteers = int(data["max_volunteers"]) if data["max_volunteers"] is not None else None
+    if "description" in data: event.description = data["description"]
+
+    db.session.commit()
+
+    return jsonify({
+        "msg": "Event updated successfully",
+        "event": event.serialize()
+    }), 200
+
+# ////////////////
 
 @api.route("/events", methods=["GET"])
 @jwt_required()

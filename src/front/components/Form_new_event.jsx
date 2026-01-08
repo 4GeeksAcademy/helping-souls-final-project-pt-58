@@ -51,11 +51,30 @@ export const FormNewEvent = ({ information, eliminar }) => {
                 </button>
               </div>
             </h5>
+            <p className="mb-1">
+              <i className="fa-solid fa-calendar me-2"></i>
+              {information.event_date}
+            </p>
+            <p className="mb-1">
+              <i className="fa-solid fa-location-dot me-2"></i>
+              <a
+                href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(information.location)}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-decoration-none"
+              >
+                {information.location}
+              </a>
+            </p>
+            <p className="mb-1">
+              <i className="fa-solid fa-tag me-2"></i>
+              {information.category}
+            </p>
 
-            <p><i className="fa-solid fa-calendar me-2"></i>{information.event_date}</p>
-            <p><i className="fa-solid fa-location-dot me-2"></i>{information.location}</p>
-            <p><i className="fa-solid fa-tag me-2"></i>{information.category}</p>
-            <p><i className="fa-solid fa-users me-2"></i>{information.max_volunteers} volunteers</p>
+            <p className="mb-1">
+              <i className="fa-solid fa-users me-2"></i>
+              {information.max_volunteers} volunteers
+            </p>
             <p className="mt-2">{information.description}</p>
           </div>
         </div>
