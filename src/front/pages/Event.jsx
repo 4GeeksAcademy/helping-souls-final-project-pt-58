@@ -209,7 +209,7 @@ export const EventsView = () => {
         Back to Campaigns
       </Link>
 
-      <h3>Events</h3>
+      {/* <h3>Events</h3>
 
       {store.events.length === 0 ? (
         <p>No events available</p>
@@ -221,7 +221,7 @@ export const EventsView = () => {
             eliminar={handleDelete}
           />
         ))
-      )}
+      )} */}
     </div>
   );
 };
