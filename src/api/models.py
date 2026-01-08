@@ -145,7 +145,7 @@ class Events(db.Model):
     location: Mapped[str]=mapped_column(String(200), nullable=False)
     max_volunteers: Mapped[int]=mapped_column(nullable=False)
     #review: Mapped[str]=mapped_column(String(200), nullable=True)
-    image: Mapped[str]=mapped_column(String(200), nullable=True)
+    image: Mapped[str]=mapped_column(String(800), nullable=True)
 
     comments: Mapped['Event_Comments']=relationship('Event_Comments', lazy=True, backref='event')
     inscriptions: Mapped['Inscription']=relationship('Inscription', lazy=True, backref='event')
