@@ -26,6 +26,7 @@ import { ApplyToCampaign } from "./pages/ApplytoCampaign";
 import { MyInterestsView } from "./pages/MyInterestsView";
 import { AboutUs } from "./pages/AboutUs";
 import { ContactView } from "./pages/Contact";
+import { EditCampaign } from "./pages/EditCampaign";
 
 
 export const router = createBrowserRouter(
@@ -43,6 +44,7 @@ export const router = createBrowserRouter(
       <Route path="campaignsboard" element={<CampaignsBoard/>} />
       <Route path="/events" element={<EventsView />} />
       <Route path="/campaigns/:id" element={<DetailedCampaign />} />
+      <Route path="/campaigns/:id/edit" element={<EditCampaign />} />
       <Route path="/campaigns/:id/apply" element={<ApplyToCampaign />} />
       <Route path="/my-interests" element={<MyInterestsView />} />
 
