@@ -34,12 +34,20 @@ export const FormNewEvent = ({ information, eliminar }) => {
             </p>
             <p className="mb-1">
               <i className="fa-solid fa-location-dot me-2"></i>
-              {information.location}
+              <a
+                href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(information.location)}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-decoration-none"
+              >
+                {information.location}
+              </a>
             </p>
             <p className="mb-1">
               <i className="fa-solid fa-tag me-2"></i>
               {information.category}
             </p>
+
             <p className="mb-1">
               <i className="fa-solid fa-users me-2"></i>
               {information.max_volunteers} volunteers

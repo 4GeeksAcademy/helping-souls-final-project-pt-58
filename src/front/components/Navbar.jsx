@@ -14,8 +14,9 @@ export const Navbar = () => {
   };
 
   const handleCategory = (category) => {
-    alert(`campaign types: ${category}`);
-  };
+  dispatch({ type: "set_selected_category", payload: category });
+  navigate("/campaignsboard");
+};
 
   const handleContact = () => alert("Contact form");
   const handleAboutUs = () => alert("Project description");
@@ -46,7 +47,7 @@ export const Navbar = () => {
                 </Link>
               </li>
             )}
-            
+
             {store.isAuth && (
               <li className="nav-item">
                 <Link className="nav-link" to="/my-interests">
@@ -79,7 +80,7 @@ export const Navbar = () => {
                 role="button"
                 data-bs-toggle="dropdown"
               >
-                Category
+                {store.selectedCategory || "Category"} 
               </span>
 
               <ul className="dropdown-menu">
