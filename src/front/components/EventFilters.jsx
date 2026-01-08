@@ -18,7 +18,7 @@ export const EventFilters = () => {
       if (!value) next.delete(key);
       else next.set(key, value);
     });
-
+ 
     setParams(next);
   };
 

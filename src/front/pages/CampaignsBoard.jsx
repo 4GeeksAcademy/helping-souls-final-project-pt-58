@@ -141,7 +141,9 @@ export const CampaignsBoard = () => {
                   <h5 className="card-title">{campaign.name}</h5>
 
                   {campaign.category && (
-                    <span className="badge bg-success mb-2">{campaign.category}</span>
+                    <span className="badge bg-primary mb-2">
+                      {campaign.category}
+                    </span>
                   )}
 
                   {campaign.event_date && (
