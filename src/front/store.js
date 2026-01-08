@@ -14,6 +14,8 @@ export const initialStore = () => {
     /* ===== EVENTS ===== */
     events: [],
 
+    selectedCategory: null,
+
     contactMessages: [],
   };
 };
@@ -82,6 +84,13 @@ export default function storeReducer(store, action = {}) {
         ),
       };
 
+    /* ===== CATEGORY ===== */
+    case "set_category":
+      return {
+        ...store,
+        selectedCategory: action.payload,
+      };
+
     /* ===== CONTACT ===== */
     case "set_contact_messages":
       return {
@@ -99,7 +108,7 @@ export default function storeReducer(store, action = {}) {
       return {
         ...store,
         contactMessages: store.contactMessages.filter(
-          (msg) => msg.id !== action.payload 
+          (msg) => msg.id !== action.payload
         ),
       };
 
