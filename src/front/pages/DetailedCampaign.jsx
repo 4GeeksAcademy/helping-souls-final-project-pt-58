@@ -2,9 +2,9 @@ import React, { useEffect, useState } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import useGlobalReducer from "../hooks/useGlobalReducer";
 import { EventInscriptions } from "../components/EventInscriptions";
-
-// ✅ NUEVO
 import EventCountdown from "../components/EventCountdown";
+
+/* ===== Google Calendar helper (INLINE para que no falle imports) ===== */
 function yyyymmdd(dateStr) {
   return String(dateStr).slice(0, 10).replaceAll("-", "");
 }
@@ -16,6 +16,8 @@ function addDays(dateStr, days) {
 }
 
 function buildGoogleCalendarUrl({ title, dateISO, description, location }) {
+  if (!dateISO) return null;
+
   const start = yyyymmdd(dateISO);
   const end = yyyymmdd(addDays(dateISO, 1)); // all-day end = next day
 
@@ -24,18 +26,16 @@ function buildGoogleCalendarUrl({ title, dateISO, description, location }) {
     text: title || "Volunteer Event",
     dates: `${start}/${end}`,
     details: description || "",
-    location: location || ""
+    location: location || "",
   });
 
   return `https://calendar.google.com/calendar/render?${params.toString()}`;
 }
 
-
 export const DetailedCampaign = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const { store } = useGlobalReducer();
-
 <<<<<<< HEAD
 =======
 
@@ -45,8 +45,6 @@ export const DetailedCampaign = () => {
   const [inscription, setInscription] = useState(null);
   const [isInscribed, setIsInscribed] = useState(false);
   const [isInterested, setIsInterested] = useState(false);
-<<<<<<< HEAD
-=======
   
  console.log("role:", store.user?.role, "isInscribed:", isInscribed);
 
@@ -97,9 +95,22 @@ export const DetailedCampaign = () => {
 
           const inscriptionData = await inscriptionRes.json();
 
-          if (inscriptionData.isInscribed) {
+          // ✅ DEBUG consola: ver qué devuelve el backend
+          console.log("INSCRIPTION RESPONSE:", inscriptionData, "status:", inscriptionRes.status);
+
+          // ✅ Tolerante: por si el backend usa otra llave
+          const inscribed =
+            inscriptionData?.isInscribed ??
+            inscriptionData?.is_inscribed ??
+            inscriptionData?.inscribed ??
+            Boolean(inscriptionData?.inscription);
+
+          if (inscriptionRes.ok && inscribed) {
             setIsInscribed(true);
-            setInscription(inscriptionData.inscription);
+            setInscription(inscriptionData.inscription || inscriptionData);
+          } else {
+            setIsInscribed(false);
+            setInscription(null);
           }
 
 <<<<<<< HEAD
@@ -117,7 +128,7 @@ export const DetailedCampaign = () => {
 >>>>>>> 21c7ef2 (haciendo el temporizador y el boton de google)
 
           const interestData = await interestRes.json();
-          setIsInterested(interestData.isInterested);
+          setIsInterested(Boolean(interestData.isInterested));
         }
       } catch (err) {
         console.error(err);
@@ -179,14 +190,6 @@ export const DetailedCampaign = () => {
     );
   }
 
-<<<<<<< HEAD
-  return (
-    <div className="container mt-4">
-      <button
-        className="btn btn-outline-secondary mb-4"
-        onClick={() => navigate("/campaignsboard")}
-      >
-=======
   // ✅ NUEVO: url para Google Calendar (solo si hay fecha)
   const gcalUrl = campaign?.event_date
     ? buildGoogleCalendarUrl({
@@ -279,43 +282,17 @@ export const DetailedCampaign = () => {
           <p>
             <strong>Max volunteers:</strong> {campaign.max_volunteers ?? "Unlimited"}
           </p>
->>>>>>> 21c7ef2 (haciendo el temporizador y el boton de google)
 
-          {campaign.description && <p>{campaign.description}</p>}
+          {/* Description */}
+          {campaign.description && (
+            <>
+              <hr />
+              <p>{campaign.description}</p>
+            </>
+          )}
 
-          {store.user?.role === "organizer" && <EventInscriptions eventId={id} />}
+          <hr />
 
-<<<<<<< HEAD
-          {store.user?.role === "volunteer" && (
-            !isInscribed ? (
-              <div className="d-flex gap-2">
-                <button
-                  className="btn btn-primary"
-                  onClick={() => navigate(`/campaigns/${id}/apply`)}
-                >
-                  Register
-                </button>
-
-                {!isInterested ? (
-                  <button
-                    className="btn btn-outline-warning"
-                    onClick={handleInterest}
-                    disabled={interestLoading}
-                  >
-                    {interestLoading ? "Saving..." : "Save for later"}
-                  </button>
-                ) : (
-                  <span className="badge bg-warning text-dark">
-                    Saved in My Interests
-                  </span>
-                )}
-              </div>
-            ) : (
-              <div className="alert alert-success">
-                You are already registered — Status: {inscription.status}
-              </div>
-            )
-=======
           {/* ORGANIZER VIEW */}
           {store.user?.role === "organizer" && (
             <>
@@ -324,7 +301,7 @@ export const DetailedCampaign = () => {
             </>
           )}
 
-          {/* VOLUNTEER VIEW */}
+          {/* VOLUNTEER VIEW (acciones) */}
           {store.user?.role === "volunteer" && (
             <>
               {!isInscribed ? (
@@ -346,23 +323,11 @@ export const DetailedCampaign = () => {
                   )}
                 </div>
               ) : (
-                <>
-                  <div className="alert alert-success">
-                    <strong>You are already registered</strong>
-                    <br />
-                    Status: <strong>{inscription?.status}</strong>
-                  </div>
-
-                  {/* ✅ NUEVO: Countdown */}
-                  <EventCountdown eventDateISO={campaign.event_date} />
-
-                  {/* ✅ NUEVO: Google Calendar */}
-                  {gcalUrl && (
-                    <a className="btn btn-primary mt-2" href={gcalUrl} target="_blank" rel="noreferrer">
-                      Add to Google Calendar
-                    </a>
-                  )}
-                </>
+                <div className="alert alert-success">
+                  <strong>You are already registered</strong>
+                  <br />
+                  Status: <strong>{inscription?.status}</strong>
+                </div>
               )}
             </>
 >>>>>>> 21c7ef2 (haciendo el temporizador y el boton de google)
