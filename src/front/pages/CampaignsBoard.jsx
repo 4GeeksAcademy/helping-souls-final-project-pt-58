@@ -66,7 +66,7 @@ export const CampaignsBoard = () => {
   const filteredCampaigns = campaigns.filter((c) => {
     if (category) {
       const cCat = (c.category || "").toLowerCase();
-      if (!cCat.includes(category)) return false; // ✅ tolerante
+      if (!cCat.includes(category)) return false;
     }
 
     if (location) {
@@ -88,28 +88,89 @@ export const CampaignsBoard = () => {
 
   if (loading) return <p className="text-center mt-4">Loading campaigns...</p>;
 
+  /* ===============================
+     NOT AUTHORIZED
+  ================================ */
   if (!isAuthorized) {
     return (
-      <div className="container mt-5 text-center">
-        <h4 className="mb-3">Please log in to access this portion of the site</h4>
-        <button className="btn btn-primary" onClick={() => navigate("/login")}>
-          Go to Login
-        </button>
+      <div className="container mt-5">
+        {/* HUMANITARIAN INTRO */}
+        <div className="mb-5">
+          <h2 className="text-center mb-4">Ways You Can Make a Difference</h2>
+
+          <div className="row">
+            {/* Humanitarian Aid */}
+            <div className="col-md-4 mb-4">
+              <div className="card h-100 shadow-sm">
+                <img
+                  src="https://images.unsplash.com/photo-1584515933487-779824d29309"
+                  className="card-img-top"
+                  alt="Caring for elderly people"
+                />
+                <div className="card-body">
+                  <h5 className="card-title">Humanitarian Aid</h5>
+                  <p className="card-text">
+                    Support seniors and vulnerable communities through meaningful volunteer work.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Environmental Care */}
+            <div className="col-md-4 mb-4">
+              <div className="card h-100 shadow-sm">
+                <img
+                  src="https://images.unsplash.com/photo-1618477461853-cf6ed80faba5"
+                  className="card-img-top"
+                  alt="Environmental care"
+                />
+                <div className="card-body">
+                  <h5 className="card-title">Environmental Care</h5>
+                  <p className="card-text">
+                    Protect forests, beaches, and ecosystems for future generations.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Animal Welfare */}
+            <div className="col-md-4 mb-4">
+              <div className="card h-100 shadow-sm">
+                <img
+                  src="https://images.unsplash.com/photo-1548199973-03cce0bbc87b"
+                  className="card-img-top"
+                  alt="Animal Welfare"
+                />
+                <div className="card-body">
+                  <h5 className="card-title">Animal Welfare</h5>
+                  <p className="card-text">
+                    Help rescue and care for abandoned animals in shelters and communities.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="text-center mt-4">
+            <h5 className="mb-3">
+              Join Helping Souls to explore and participate in these campaigns
+            </h5>
+            <button className="btn btn-primary px-4" onClick={() => navigate("/signup")}>
+              Create an account
+            </button>
+          </div>
+        </div>
       </div>
     );
   }
 
-  if (error) {
-    return (
-      <div className="container mt-5 text-center">
-        <div className="alert alert-danger">{error}</div>
-      </div>
-    );
-  }
-
+  /* ===============================
+     AUTHORIZED VIEW
+  ================================ */
   return (
-    <div className="container mt-4">
-      <div className="d-flex justify-content-between align-items-center mb-3">
+    <div className="container">
+      {/* HEADER */}
+      <div className="d-flex justify-content-between align-items-center mb-4">
         <h2 className="mb-0">Campaigns Board</h2>
 
         {storeUser?.role === "organizer" && (
@@ -119,6 +180,7 @@ export const CampaignsBoard = () => {
         )}
       </div>
 
+      {/* INFO */}
       <div className="d-flex justify-content-between align-items-center mb-2">
         <small className="text-muted">
           Filters active: {["category", "location", "from", "to"].filter((k) => params.get(k)).length}
@@ -130,6 +192,8 @@ export const CampaignsBoard = () => {
 
       <EventFilters />
 
+
+      {/* CAMPAIGNS */}
       {filteredCampaigns.length === 0 ? (
         <p className="text-center">No campaigns match your filters</p>
       ) : (
@@ -170,6 +234,72 @@ export const CampaignsBoard = () => {
           ))}
         </div>
       )}
+{/* INTRO CARDS (ULTRA COMPACT) */}
+      <div className="mt-5">
+
+        <div className="row justify-content-center g-3 mt-3 mb-5">
+          {/* Humanitarian */}
+          <div className="col-12 col-md-4 col-lg-3">
+            <div className="d-flex align-items-center gap-3 p-2 border rounded shadow-sm">
+              <img
+                src="https://images.unsplash.com/photo-1584515933487-779824d29309"
+                alt="Humanitarian Aid"
+                style={{
+                  width: "56px",
+                  height: "56px",
+                  objectFit: "cover",
+                  borderRadius: "50%",
+                }}
+              />
+              <div>
+                <div className="fw-semibold small">Humanitarian Aid</div>
+                <small className="text-muted">Support people in need</small>
+              </div>
+            </div>
+          </div>
+
+          {/* Environment */}
+          <div className="col-12 col-md-4 col-lg-3">
+            <div className="d-flex align-items-center gap-3 p-2 border rounded shadow-sm">
+              <img
+                src="https://images.unsplash.com/photo-1618477461853-cf6ed80faba5"
+                alt="Environmental Care"
+                style={{
+                  width: "56px",
+                  height: "56px",
+                  objectFit: "cover",
+                  borderRadius: "50%",
+                }}
+              />
+              <div>
+                <div className="fw-semibold small">Environmental Care</div>
+                <small className="text-muted">Protect nature</small>
+              </div>
+            </div>
+          </div>
+
+          {/* Animals */}
+          <div className="col-12 col-md-4 col-lg-3">
+            <div className="d-flex align-items-center gap-3 p-2 border rounded shadow-sm">
+              <img
+                src="https://images.unsplash.com/photo-1548199973-03cce0bbc87b"
+                alt="Animal Welfare"
+                style={{
+                  width: "56px",
+                  height: "56px",
+                  objectFit: "cover",
+                  borderRadius: "50%",
+                }}
+              />
+              <div>
+                <div className="fw-semibold small">Animal Welfare</div>
+                <small className="text-muted">Care for animals</small>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
     </div>
   );
 };
