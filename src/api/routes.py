@@ -88,6 +88,7 @@ def allowed_file(filename):
 @api.route("/login", methods=["POST"])
 def login():
     data = request.get_json()
+
     email = data.get("email", "").lower()
     password = data.get("password")
 
@@ -96,8 +97,8 @@ def login():
     if not user or not check_password_hash(user.password, password):
         return jsonify({"msg": "Invalid credentials"}), 401
 
-   access_token = create_access_token(identity=str(user.userID))
-
+    # 🔥 FIX CLAVE: JWT sub DEBE ser string
+    access_token = create_access_token(identity=str(user.userID))
 
     organizer = Organizer.query.filter_by(userID=user.userID).first()
     volunteer = Volunteer.query.filter_by(userID=user.userID).first()
