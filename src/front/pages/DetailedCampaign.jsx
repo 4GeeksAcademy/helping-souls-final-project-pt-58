@@ -36,8 +36,6 @@ export const DetailedCampaign = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const { store } = useGlobalReducer();
-<<<<<<< HEAD
-=======
 
   // 🔥 TOKEN CONSISTENTE (store o localStorage)
   const token = store?.token || localStorage.getItem("token");
@@ -51,7 +49,6 @@ export const DetailedCampaign = () => {
   });
 
   /* ===== STATES ===== */
->>>>>>> 21c7ef2 (haciendo el temporizador y el boton de google)
   const [campaign, setCampaign] = useState(null);
   const [inscription, setInscription] = useState(null);
   const [isInscribed, setIsInscribed] = useState(false);
@@ -127,12 +124,10 @@ export const DetailedCampaign = () => {
             setInscription(null);
           }
 
-<<<<<<< HEAD
           const interestRes = await fetch(
             `${backendUrl}/api/events/${id}/interest`,
             { headers: { Authorization: `Bearer ${store.token}` } }
           );
-=======
           // ===== FETCH INTEREST =====
           const interestRes = await fetch(
             `${backendUrl}/api/events/${id}/interest`,
@@ -142,7 +137,6 @@ export const DetailedCampaign = () => {
               },
             }
           );
->>>>>>> 21c7ef2 (haciendo el temporizador y el boton de google)
 
           const interestData = await interestRes.json();
           setIsInterested(Boolean(interestData?.isInterested));
@@ -196,13 +190,10 @@ export const DetailedCampaign = () => {
   if (error || !campaign) {
     return (
       <div className="container mt-5 text-center">
-<<<<<<< HEAD
         <div className="alert alert-danger">
           {error || "Campaign not found"}
         </div>
-=======
         <div className="alert alert-danger">{error || "Campaign not found"}</div>
->>>>>>> 21c7ef2 (haciendo el temporizador y el boton de google)
         <button
           className="btn btn-secondary"
           onClick={() => navigate("/campaignsboard")}

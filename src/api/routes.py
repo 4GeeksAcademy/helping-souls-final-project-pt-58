@@ -96,7 +96,8 @@ def login():
     if not user or not check_password_hash(user.password, password):
         return jsonify({"msg": "Invalid credentials"}), 401
 
-    access_token = create_access_token(identity=user.userID)
+   access_token = create_access_token(identity=str(user.userID))
+
 
     organizer = Organizer.query.filter_by(userID=user.userID).first()
     volunteer = Volunteer.query.filter_by(userID=user.userID).first()
