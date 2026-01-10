@@ -1,45 +1,83 @@
 """
 This module takes care of starting the API Server, Loading the DB and Adding the endpoints
 """
-import stripe
-from werkzeug.security import generate_password_hash, check_password_hash
-from flask_jwt_extended import create_access_token, get_jwt_identity,  jwt_required
-from werkzeug.utils import secure_filename
+
+# =====================
+# STANDARD LIB
+# =====================
 import os
-from flask_jwt_extended import jwt_required, get_jwt_identity
 from datetime import datetime
-from flask_cors import CORS
-from api.utils import generate_sitemap, APIException
-from api.models import db, User, Events, Organizer, Volunteer, Inscription, Interest
-from flask import Flask, request, jsonify, url_for, Blueprint
+
+# =====================
+# THIRD PARTY
+# =====================
+import stripe
 from dotenv import load_dotenv
+from flask import Flask, request, jsonify, url_for, Blueprint
+from flask_cors import CORS
+from flask_jwt_extended import (
+    create_access_token,
+    jwt_required,
+    get_jwt_identity
+)
+from werkzeug.security import generate_password_hash, check_password_hash
+from werkzeug.utils import secure_filename
+
+import cloudinary
+import cloudinary.uploader
+import cloudinary.api
+
+# =====================
+# LOCAL IMPORTS
+# =====================
+from api.models import (
+    db,
+    User,
+    Events,
+    Organizer,
+    Volunteer,
+    Inscription,
+    Interest,
+    ContactMessage
+)
+from api.utils import generate_sitemap, APIException
+
+# =====================
+# ENV
+# =====================
 load_dotenv()
 
-from flask import Flask, request, jsonify, url_for, Blueprint
-from api.models import db, User, Events, Organizer, Volunteer, ContactMessage
-from api.utils import generate_sitemap, APIException
-from flask_cors import CORS
-from datetime import datetime
-from flask_jwt_extended import jwt_required, get_jwt_identity
-import os
-from werkzeug.utils import secure_filename
+# =====================
+# CONFIG
+# =====================
 UPLOAD_FOLDER = "uploads"
 ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg", "gif"}
-
-
-def allowed_file(filename):
-    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
-
 
 stripe.api_key = os.getenv("STRIPE_SECRET_KEY")
 
 FRONTEND_URL = "https://upgraded-enigma-wrjrxg6w44w52rrr-3000.app.github.dev/"
 
-api = Blueprint('api', __name__)
+# =====================
+# HELPERS
+# =====================
+def allowed_file(filename):
+    return "." in filename and filename.rsplit(".", 1)[1].lower() in ALLOWED_EXTENSIONS
 
-# Allow CORS requests to this API
+# =====================
+# BLUEPRINT
+# =====================
+api = Blueprint("api", __name__)
 CORS(api)
 
+# =====================
+# CLOUDINARY
+# =====================
+cloudinary.config(
+    cloud_name=os.environ.get("CLOUDINARY_CLOUD_NAME"),
+    api_key=os.environ.get("CLOUDINARY_API_KEY"),
+    api_secret=os.environ.get("CLOUDINARY_API_SECRET"),
+    secure=True
+)
 
 @api.route('/hello', methods=['POST', 'GET'])
 def handle_hello():
@@ -79,7 +117,7 @@ def login():
 
     # Serializar usuario y agregar rol
     user_data = user.serialize()
-    user_data["role"] = role  # ✅ agregamos el rol aquí
+    user_data["role"] = role  #  agregamos el rol aquí
 
     return jsonify({
         "msg": "Login successful",
@@ -161,35 +199,36 @@ def signup():
             "error": str(e)
         }), 500
 
-# POST Y GET DE EVENTOS
 
+
+@api.route("/cloudinary_test", methods=["POST"])
+def cloudinary_test():
+    file = request.files.get("image")
+    result = cloudinary.uploader.upload(file)
+    return jsonify({"url": result["secure_url"]}), 200
+
+
+
+# POST Y GET DE EVENTOS
 
 @api.route("/new_events", methods=["POST"])
 @jwt_required()
 def new_event():
     try:
-        #  Obtener userID desde el JWT
+        # ===============================
+        # AUTH / ORGANIZER
+        # ===============================
         user_id = get_jwt_identity()
 
-        #  Verificar que el usuario sea organizador
         organizer = Organizer.query.filter_by(userID=user_id).first()
         if organizer is None:
-            return jsonify({
-                "msg": "User is not registered as organizer"
-            }), 403
+            return jsonify({"msg": "User is not registered as organizer"}), 403
 
-        #  Detectar tipo de request
-        if request.content_type and request.content_type.startswith("multipart/form-data"):
-            data = request.form
-            file = request.files.get("image")
-        else:
-            data = request.get_json()
-            file = None
+        # ===============================
+        # FORM DATA
+        # ===============================
+        data = request.form
 
-        if not data:
-            return jsonify({"msg": "No data provided"}), 400
-
-        #  Validar campos requeridos
         required_fields = [
             "name",
             "event_date",
@@ -201,32 +240,29 @@ def new_event():
 
         for field in required_fields:
             if field not in data or not data[field]:
-                return jsonify({
-                    "msg": f"Missing or empty field: {field}"
-                }), 400
+                return jsonify({"msg": f"Missing or empty field: {field}"}), 400
 
-        #  Validar fecha
         try:
             event_date = datetime.fromisoformat(data["event_date"]).date()
         except ValueError:
-            return jsonify({
-                "msg": "Invalid date format. Use YYYY-MM-DD"
-            }), 400
+            return jsonify({"msg": "Invalid date format. Use YYYY-MM-DD"}), 400
 
-        #  Manejo de imagen (opcional)
-        image_filename = None
-        if file:
-            if not allowed_file(file.filename):
-                return jsonify({
-                    "msg": "Invalid image format"
-                }), 400
+        # ===============================
+        # IMAGE (CLOUDINARY)
+        # ===============================
+        image_url = None
+        image_file = request.files.get("image")
 
-            filename = secure_filename(file.filename)
-            os.makedirs(UPLOAD_FOLDER, exist_ok=True)
-            file.save(os.path.join(UPLOAD_FOLDER, filename))
-            image_filename = filename
+        if image_file and image_file.filename != "":
+            upload_result = cloudinary.uploader.upload(
+                image_file.stream,   # 🔥 CLAVE
+                folder="campaigns"
+            )
+            image_url = upload_result.get("secure_url")
 
-        #  Crear evento
+        # ===============================
+        # CREATE EVENT
+        # ===============================
         event = Events(
             organizerID=organizer.organizerID,
             name=data["name"],
@@ -235,22 +271,19 @@ def new_event():
             category=data["category"],
             max_volunteers=int(data["max_volunteers"]),
             description=data["description"],
-            image=image_filename
+            image=image_url
         )
 
         db.session.add(event)
         db.session.commit()
 
-        #  Respuesta correcta
         return jsonify({
             "msg": "Event created successfully",
             "event": event.serialize()
         }), 201
 
     except Exception as e:
-        #  Log REAL del error
-        print(" CREATE EVENT ERROR:", e)
-
+        print("CREATE EVENT ERROR:", e)
         return jsonify({
             "msg": "Internal server error",
             "error": str(e)
@@ -319,7 +352,8 @@ def get_all_events():
                 "category": event.category,
                 "max_volunteers": event.max_volunteers,
                 "description": event.description,
-                "organizerID": event.organizerID
+                "organizerID": event.organizerID,
+                "image": event.image   
             }
             for event in events
         ]
@@ -346,7 +380,8 @@ def get_event_detail(event_id):
             "category": event.category,
             "max_volunteers": event.max_volunteers,
             "description": event.description,
-            "organizerID": event.organizerID
+            "organizerID": event.organizerID,
+            "image": event.image   
         }
     }), 200
 
