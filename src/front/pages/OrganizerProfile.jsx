@@ -80,10 +80,6 @@ export default function OrganizerProfile() {
               </a>
             </div>
           )}
-
-          <div className="text-muted small mt-2">
-            Organizer ID: {organizer.organizerID}
-          </div>
         </div>
       </div>
 
