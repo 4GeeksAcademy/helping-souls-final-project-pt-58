@@ -462,3 +462,19 @@ body {
     transform: translateY(0);
   }
 }
+
+/* filtro */
+
+.filters-wrapper {
+  max-height: 0;
+  overflow: hidden;
+  opacity: 0;
+  transform: translateY(-10px);
+  transition: all 0.35s ease;
+}
+
+.filters-wrapper.open {
+  max-height: 500px; /* suficiente para los filtros */
+  opacity: 1;
+  transform: translateY(0);
+}
