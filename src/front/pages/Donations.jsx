@@ -5,19 +5,39 @@ export const Donations = () => {
   const [loading, setLoading] = useState(false);
 
   const handleDonate = async () => {
-    setLoading(true);
+    try {
+      setLoading(true);
 
-    const res = await fetch(
-      `${import.meta.env.VITE_BACKEND_URL}api/create-checkout-session`,
-      {
+      const backendUrl = import.meta.env.VITE_BACKEND_URL;
+      console.log("VITE_BACKEND_URL:", backendUrl);
+
+      const res = await fetch(`${backendUrl}/api/create-checkout-session`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ amount })
-      }
-    );
+      });
 
-    const data = await res.json();
-    window.location.href = data.url;
+      const data = await res.json();
+      console.log("Checkout status:", res.status);
+      console.log("Checkout response:", data);
+
+      // Si backend devuelve error
+      if (!res.ok) {
+        throw new Error(data.error || "Checkout failed");
+      }
+
+      // Si no viene url (esto es lo que te está pasando)
+      if (!data.url) {
+        throw new Error("No checkout URL returned (data.url is missing)");
+      }
+
+      window.location.href = data.url;
+    } catch (err) {
+      console.error("Donation error:", err);
+      alert(err.message || "Error starting donation");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (

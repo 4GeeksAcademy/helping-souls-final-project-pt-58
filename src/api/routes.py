@@ -55,7 +55,7 @@ ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg", "gif"}
 
 stripe.api_key = os.getenv("STRIPE_SECRET_KEY")
 
-FRONTEND_URL = "https://upgraded-enigma-wrjrxg6w44w52rrr-3000.app.github.dev/"
+FRONTEND_URL = "https://urban-goggles-7v4vwpqgx4792x7w6-3000.app.github.dev/"
 
 # =====================
 # HELPERS
@@ -340,6 +340,7 @@ def get_all_events():
     user_id = get_jwt_identity()  # solo valida token
 
     events = Events.query.all()
+    
 
     return jsonify({
         "total": len(events),
@@ -370,6 +371,7 @@ def get_event_detail(event_id):
 
     if not event:
         return jsonify({"msg": "Event not found"}), 404
+    organizer = Organizer.query.get(event.organizerID) if event.organizerID else None
 
     return jsonify({
         "event": {
@@ -381,6 +383,7 @@ def get_event_detail(event_id):
             "max_volunteers": event.max_volunteers,
             "description": event.description,
             "organizerID": event.organizerID,
+            "organizer_name": organizer.name if organizer else None,
             "image": event.image   
         }
     }), 200
@@ -763,3 +766,39 @@ def contact():
             "msg": "Internal server error",
             "error": str(e)
         }), 500
+    
+#For organizer profile
+@api.route("/organizers/<int:organizer_id>", methods=["GET"])
+@jwt_required()
+def get_organizer_profile(organizer_id):
+    user_id = get_jwt_identity()  # valida token (opcional, pero consistente)
+
+    organizer = Organizer.query.get(organizer_id)
+    if not organizer:
+        return jsonify({"msg": "Organizer not found"}), 404
+
+    events = Events.query.filter_by(organizerID=organizer_id).all()
+
+    return jsonify({
+        "organizer": {
+            "organizerID": organizer.organizerID,
+            "userID": organizer.userID,
+            "name": organizer.name,
+            "org_link": organizer.org_link
+        },
+        "events": [
+            {
+                "eventID": e.eventID,
+                "name": e.name,
+                "event_date": e.event_date.isoformat() if e.event_date else None,
+                "location": e.location,
+                "category": e.category,
+                "max_volunteers": e.max_volunteers,
+                "description": e.description,
+                "organizerID": e.organizerID,
+                "image": e.image
+            } for e in events
+        ],
+        "total_events": len(events)
+    }), 200
+
