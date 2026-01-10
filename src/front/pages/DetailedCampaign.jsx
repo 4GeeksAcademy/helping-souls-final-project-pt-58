@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, Link } from "react-router-dom";
 import useGlobalReducer from "../hooks/useGlobalReducer";
 import { EventInscriptions } from "../components/EventInscriptions";
 
@@ -125,7 +125,16 @@ export const DetailedCampaign = () => {
               </button>
             )}
           </div>
-
+          {campaign.organizerID && (
+            <div className="mb-2">
+              <small className="text-muted">
+                Organizer:{" "}
+                <Link to={`/profile/organizer/${campaign.organizerID}`} className="text-decoration-none">
+                  {campaign.organizer_name || "View organizer profile"}
+                </Link>
+              </small>
+            </div>
+          )}
 
           {/* CATEGORY */}
           {campaign.category && (
