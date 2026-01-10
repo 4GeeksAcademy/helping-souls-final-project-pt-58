@@ -165,6 +165,16 @@ export const EventsView = () => {
           onChange={handleChange}
           required
         />
+        {form.location.length > 3 && (
+          <div className="mb-2">
+            <iframe
+              width="100%"
+              height="150"
+              className="rounded border"
+              src={`https://www.google.com/maps?q=${encodeURIComponent(form.location)}&output=embed`}
+            ></iframe>
+          </div>
+        )}
 
         <button
           type="button"
