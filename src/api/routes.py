@@ -767,5 +767,37 @@ def contact():
         }), 500
     
 #For organizer profile
+@api.route("/organizers/<int:organizer_id>", methods=["GET"])
+@jwt_required()
+def get_organizer_profile(organizer_id):
+    user_id = get_jwt_identity()  # valida token (opcional, pero consistente)
 
+    organizer = Organizer.query.get(organizer_id)
+    if not organizer:
+        return jsonify({"msg": "Organizer not found"}), 404
+
+    events = Events.query.filter_by(organizerID=organizer_id).all()
+
+    return jsonify({
+        "organizer": {
+            "organizerID": organizer.organizerID,
+            "userID": organizer.userID,
+            "name": organizer.name,
+            "org_link": organizer.org_link
+        },
+        "events": [
+            {
+                "eventID": e.eventID,
+                "name": e.name,
+                "event_date": e.event_date.isoformat() if e.event_date else None,
+                "location": e.location,
+                "category": e.category,
+                "max_volunteers": e.max_volunteers,
+                "description": e.description,
+                "organizerID": e.organizerID,
+                "image": e.image
+            } for e in events
+        ],
+        "total_events": len(events)
+    }), 200
 
