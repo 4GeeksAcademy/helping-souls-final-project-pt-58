@@ -339,6 +339,7 @@ def get_all_events():
     user_id = get_jwt_identity()  # solo valida token
 
     events = Events.query.all()
+    
 
     return jsonify({
         "total": len(events),
@@ -369,6 +370,7 @@ def get_event_detail(event_id):
 
     if not event:
         return jsonify({"msg": "Event not found"}), 404
+    organizer = Organizer.query.get(event.organizerID) if event.organizerID else None
 
     return jsonify({
         "event": {
@@ -380,6 +382,7 @@ def get_event_detail(event_id):
             "max_volunteers": event.max_volunteers,
             "description": event.description,
             "organizerID": event.organizerID,
+            "organizer_name": organizer.name if organizer else None,
             "image": event.image   
         }
     }), 200
@@ -762,3 +765,7 @@ def contact():
             "msg": "Internal server error",
             "error": str(e)
         }), 500
+    
+#For organizer profile
+
+

@@ -15,7 +15,7 @@ import { Signup } from "./pages/Signup";
 import { Login } from "./pages/Login";
 import { CreateEvent } from "./pages/CreateEvent";
 import { VolunteerProfile } from "./pages/VolunteerProfile";
-import { OrganizerProfile } from "./pages/OrganizerProfile";
+import  OrganizerProfile  from "./pages/OrganizerProfile";
 import { Donations } from "./pages/Donations";
 import { CampaignsBoard } from "./pages/CampaignsBoard";
 import { Success } from "./pages/Success";
@@ -51,7 +51,7 @@ export const router = createBrowserRouter(
 
       {/* Profiles */}
       <Route path="profile/volunteer" element={<VolunteerProfile />} />
-      <Route path="profile/organizer" element={<OrganizerProfile />} />
+      <Route path="profile/organizer/:organizerID" element={<OrganizerProfile />} />
 
       {/* Donations */}
       <Route path="donations" element={<Donations />} />
