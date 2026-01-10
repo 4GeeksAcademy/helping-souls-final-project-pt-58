@@ -55,7 +55,7 @@ ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg", "gif"}
 
 stripe.api_key = os.getenv("STRIPE_SECRET_KEY")
 
-FRONTEND_URL = "https://upgraded-enigma-wrjrxg6w44w52rrr-3000.app.github.dev/"
+FRONTEND_URL = "https://urban-goggles-7v4vwpqgx4792x7w6-3000.app.github.dev/"
 
 # =====================
 # HELPERS
@@ -718,8 +718,8 @@ def create_checkout_session():
                 "quantity": 1,
             }],
 
-            success_url=f"{FRONTEND_URL}success",
-            cancel_url=f"{FRONTEND_URL}cancel",
+            success_url=f"{FRONTEND_URL}/success",
+            cancel_url=f"{FRONTEND_URL}/cancel",
         )
 
         return jsonify({"url": session.url})

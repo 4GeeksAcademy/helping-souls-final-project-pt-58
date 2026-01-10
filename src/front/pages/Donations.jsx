@@ -8,7 +8,7 @@ export const Donations = () => {
     setLoading(true);
 
     const res = await fetch(
-      `${import.meta.env.VITE_BACKEND_URL}api/create-checkout-session`,
+      `${import.meta.env.VITE_BACKEND_URL}/api/create-checkout-session`,
       {
         method: "POST",
         headers: { "Content-Type": "application/json" },
