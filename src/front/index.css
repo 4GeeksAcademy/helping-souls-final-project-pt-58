@@ -1,0 +1,480 @@
+/* =========================
+   VARIABLES
+========================= */
+:root {
+  --blue-soft: #9ECAD6;
+  --blue-muted: #748DAE;
+  --pink-soft: #F5CBCB;
+  --pink-light: #FFEAEC;
+
+  --text-main: #2b2b2b;
+  --text-muted: #7a7a7a;
+  --white: #ffffff;
+}
+
+/* =========================
+   RESET
+========================= */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+/* =========================
+   BASE
+========================= */
+body {
+  font-family: "Lato", sans-serif;
+  background-color: var(--pink-light);
+  color: var(--text-main);
+  line-height: 1.7;
+}
+
+/* ===============================
+   NAVBAR GENERAL
+================================ */
+.navbar {
+  background-color: #f8fbfd !important;
+  padding: 0.6rem 1.2rem;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.04);
+}
+
+/* ===============================
+   BRAND / TÍTULO
+================================ */
+.navbar-brand {
+  font-family: "Montserrat", sans-serif;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: #1f2933;
+}
+
+.navbar-brand:hover {
+  color: #1f2933; /* sin hover en el título */
+}
+
+/* ===============================
+   LINKS DEL NAVBAR
+================================ */
+.navbar-nav .nav-link {
+  font-family: "Lato", sans-serif;
+  color: #1f2933;
+  font-weight: 500;
+  position: relative;
+  padding: 0.5rem 0.8rem;
+  transition: color 0.3s ease;
+}
+
+/* Hover color */
+.navbar-nav .nav-link:hover {
+  color: #748dae;
+}
+
+/* Subrayado animado */
+.navbar-nav .nav-link::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: 2px;
+  width: 0;
+  height: 2px;
+  background-color: #9ecad6;
+  transition: all 0.3s ease;
+  transform: translateX(-50%);
+}
+
+.navbar-nav .nav-link:hover::after {
+  width: 65%;
+}
+
+/* ===============================
+   DROPDOWN
+================================ */
+.navbar .dropdown-menu {
+  border-radius: 12px;
+  border: none;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+}
+
+.navbar .dropdown-item {
+  font-family: "Lato", sans-serif;
+  transition: background-color 0.2s ease;
+}
+
+.navbar .dropdown-item:hover {
+  background-color: #e6f1f6;
+  color: #1f2933;
+}
+
+/* ===============================
+   BOTONES (LOGIN / SIGNUP / LOGOUT)
+================================ */
+.navbar .d-flex {
+  align-items: center;
+}
+
+.navbar .btn {
+  display: flex;
+  align-items: center;
+  height: 38px;
+  border-radius: 999px;
+  font-size: 0.9rem;
+}
+
+/* Sign up */
+.navbar .btn-primary {
+  background-color: #748dae;
+  border-color: #748dae;
+}
+
+.navbar .btn-primary:hover {
+  background-color: #9ecad6;
+  border-color: #9ecad6;
+  color: #000;
+}
+
+/* Login */
+.navbar .btn-outline-primary {
+  color: #748dae;
+  border-color: #748dae;
+}
+
+.navbar .btn-outline-primary:hover {
+  background-color: #9ecad6;
+  border-color: #9ecad6;
+  color: #000;
+}
+
+/* Logout (más suave que rojo Bootstrap) */
+.navbar .btn-danger {
+  background-color: #e57373;
+  border-color: #e57373;
+}
+
+.navbar .btn-danger:hover {
+  background-color: #ef9a9a;
+  border-color: #ef9a9a;
+}
+
+/* ===============================
+   FIX ALINEACIÓN NAVBAR
+================================ */
+
+/* Fuerza alineación vertical de TODO el contenido */
+.navbar .container-fluid,
+.navbar .navbar-collapse {
+  align-items: center !important;
+}
+
+/* Alinea el menú izquierdo */
+.navbar-nav {
+  align-items: center;
+}
+
+/* Alinea el bloque derecho (Login / Sign up) */
+.navbar .ms-auto {
+  display: flex;
+  align-items: center;
+}
+
+/* Ajuste fino de los botones */
+.navbar .btn {
+  display: flex;
+  align-items: center;
+  height: 36px;
+  padding-top: 0;
+  padding-bottom: 0;
+  line-height: 1;
+}
+
+.navbar .ms-auto .btn {
+  position: relative;
+  top: -3px;   /* 👈 AJUSTE CLAVE */
+}
+
+.navbar .ms-auto {
+  transform: translateY(-3px);
+}
+
+/* =========================
+   HOME / SECCIÓN PRINCIPAL
+========================= */
+.container {
+  max-width: 1080px;
+  margin: 0 auto;
+  padding: 4rem 1.5rem;
+}
+
+.hero {
+  text-align: center;
+  max-width: 720px;
+  margin: 0 auto;
+}
+
+.hero h1 {
+  font-family: "Montserrat", sans-serif;
+  font-size: 2.4rem;
+  font-weight: 600;
+  color: var(--blue-muted);
+}
+
+.hero .subtitle {
+  margin-top: 0.6rem;
+  font-size: 1.05rem;
+  color: var(--text-muted);
+}
+
+
+
+/* =========================
+   SECCIONES
+========================= */
+.section {
+  margin-top: 4rem;
+}
+
+/* =========================
+   CARDS
+========================= */
+.cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 2rem;
+}
+
+.card {
+  background-color: var(--white);
+  padding: 2rem;
+  border-radius: 14px;
+  border: 1px solid rgba(0, 0, 0, 0.04);
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+.card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.06);
+}
+
+.card h3 {
+  font-family: "Montserrat", sans-serif;
+  font-size: 1.15rem;
+  color: var(--blue-muted);
+}
+
+.card p {
+  margin-top: 0.6rem;
+  color: var(--text-muted);
+  font-size: 0.95rem;
+}
+
+/* =========================
+   BOTONES
+========================= */
+.btn {
+  margin-top: 1.2rem;
+  font-family: "Montserrat", sans-serif;
+  font-size: 0.85rem;
+  font-weight: 500;
+  padding: 0.55rem 1.4rem;
+  border-radius: 999px;
+  border: none;
+  cursor: pointer;
+  background-color: var(--blue-soft);
+  color: var(--text-main);
+  transition: all 0.25s ease;
+}
+
+.btn:hover {
+  background-color: var(--blue-muted);
+  color: var(--white);
+}
+
+/* =========================
+   FOOTER
+========================= */
+.footer {
+  background-color: #ffffff;
+  border-top: 1px solid rgba(0, 0, 0, 0.05);
+  margin-top: 5rem;
+}
+
+.footer-container {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 3rem 1.5rem 2rem;
+  text-align: center;
+}
+
+/* Title */
+.footer-title {
+  font-family: "Montserrat", sans-serif;
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: #748dae;
+  margin-bottom: 2.5rem;
+}
+
+/* Organizations */
+.footer-orgs {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 2rem;
+  align-items: center;
+  margin-bottom: 2.5rem;
+}
+
+.footer-org {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-decoration: none;
+  color: #2b2b2b;
+  transition: transform 0.25s ease;
+}
+
+.footer-org:hover {
+  transform: translateY(-4px);
+}
+
+.footer-org img {
+  width: 90px;
+  height: 90px;
+  object-fit: cover;
+  border-radius: 50%;
+  background-color: #ffeaec;
+  padding: 0.4rem;
+  margin-bottom: 0.6rem;
+}
+
+.footer-org span {
+  font-size: 0.9rem;
+  color: #6f6f6f;
+}
+
+/* Footer bottom text */
+.footer-copy {
+  font-size: 0.8rem;
+  color: #9a9a9a;
+}
+
+
+/* =========================
+   HOME FULL BACKGROUND
+========================= */
+.hero-full {
+  min-height: 100vh;
+  background-image: url("https://quiurevista.com/wp-content/uploads/2021/09/Voluntariado_Beneficios.jpg");
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  position: relative;
+}
+
+/* Overlay con paleta */
+.hero-overlay {
+  min-height: 100vh;
+  background: linear-gradient(
+    rgba(158, 202, 214, 0.55),
+    rgba(116, 141, 174, 0.55)
+  );
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* =========================
+   CONTENT
+========================= */
+.hero-content {
+  animation: fadeUp 1.2s ease forwards;
+  padding: 2rem;
+  max-width: 700px;
+}
+
+/* =========================
+   TEXT
+========================= */
+.hero-title {
+  font-family: "Montserrat", sans-serif;
+  font-size: 3rem;
+  font-weight: 600;
+  color: #ffffff;
+}
+
+.hero-subtitle {
+  font-family: "Lato", sans-serif;
+  font-size: 1.2rem;
+  color: #ffeaec;
+  margin-top: 0.5rem;
+}
+
+.hero-small {
+  display: block;
+  margin-top: 0.4rem;
+  color: #ffffff;
+  opacity: 0.85;
+}
+
+/* =========================
+   BUTTON
+========================= */
+.hero-btn {
+  background-color: #f5cbcb;
+  color: #2b2b2b;
+  border: none;
+  font-family: "Montserrat", sans-serif;
+  font-size: 0.9rem;
+  transition: all 0.3s ease;
+}
+
+.hero-btn:hover {
+  background-color: #ffffff;
+  color: #748dae;
+}
+
+.card img {
+  height: 200px;
+  object-fit: cover;
+}
+
+.card-title {
+  font-family: "Montserrat", sans-serif;
+}
+
+.card-text {
+  font-family: "Lato", sans-serif;
+  color: #555;
+}
+
+/* =========================
+   ANIMATION
+========================= */
+@keyframes fadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* filtro */
+
+.filters-wrapper {
+  max-height: 0;
+  overflow: hidden;
+  opacity: 0;
+  transform: translateY(-10px);
+  transition: all 0.35s ease;
+}
+
+.filters-wrapper.open {
+  max-height: 500px; /* suficiente para los filtros */
+  opacity: 1;
+  transform: translateY(0);
+}

@@ -215,16 +215,19 @@ def cloudinary_test():
 @jwt_required()
 def new_event():
     try:
+        # ===============================
+        # AUTH / ORGANIZER
+        # ===============================
         user_id = get_jwt_identity()
 
         organizer = Organizer.query.filter_by(userID=user_id).first()
         if organizer is None:
             return jsonify({"msg": "User is not registered as organizer"}), 403
 
+        # ===============================
+        # FORM DATA
+        # ===============================
         data = request.form
-
-        if not data:
-            return jsonify({"msg": "No data provided"}), 400
 
         required_fields = [
             "name",
@@ -245,22 +248,20 @@ def new_event():
             return jsonify({"msg": "Invalid date format. Use YYYY-MM-DD"}), 400
 
         # ===============================
-        # IMAGEN (CLOUDINARY)
+        # IMAGE (CLOUDINARY)
         # ===============================
         image_url = None
+        image_file = request.files.get("image")
 
-        if "image" in request.files:
-            image_file = request.files["image"]
-
-            if image_file.filename != "":
-                upload_result = cloudinary.uploader.upload(
-                    image_file,
-                    folder="campaigns"
-                )
-                image_url = upload_result["secure_url"]
+        if image_file and image_file.filename != "":
+            upload_result = cloudinary.uploader.upload(
+                image_file.stream,   # 🔥 CLAVE
+                folder="campaigns"
+            )
+            image_url = upload_result.get("secure_url")
 
         # ===============================
-        #  CREAR EVENTO
+        # CREATE EVENT
         # ===============================
         event = Events(
             organizerID=organizer.organizerID,
@@ -270,7 +271,7 @@ def new_event():
             category=data["category"],
             max_volunteers=int(data["max_volunteers"]),
             description=data["description"],
-            image=image_url   # 👈 URL CLOUDINARY
+            image=image_url
         )
 
         db.session.add(event)
