@@ -26,8 +26,31 @@ from api.models import (
     ContactMessage
 )
 
+# =====================
+# BLUEPRINT + CORS
+# =====================
+
 api = Blueprint("api", __name__)
-CORS(api)
+
+CORS(
+    api,
+    resources={r"/*": {"origins": "*"}},
+    supports_credentials=True,
+    allow_headers=["Content-Type", "Authorization"],
+    methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+)
+
+@api.after_request
+def add_cors_headers(response):
+    response.headers["Access-Control-Allow-Origin"] = "*"
+    response.headers["Access-Control-Allow-Headers"] = "Content-Type, Authorization"
+    response.headers["Access-Control-Allow-Methods"] = "GET, POST, PUT, DELETE, OPTIONS"
+    return response
+
+
+# =====================
+# CONFIG
+# =====================
 
 UPLOAD_FOLDER = "uploads"
 ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg", "gif"}
@@ -41,12 +64,22 @@ FRONTEND_URL = os.getenv("FRONTEND_URL")
 # =====================
 
 def current_user_id():
-    """Return JWT identity as int (we store it as string in the token)."""
-    return int(get_jwt_identity())
-
+    identity = get_jwt_identity()
+    if identity is None:
+        raise ValueError("Missing JWT identity")
+    return int(identity)
 
 def allowed_file(filename):
     return "." in filename and filename.rsplit(".", 1)[1].lower() in ALLOWED_EXTENSIONS
+
+
+# =====================
+# BASIC / HELLO
+# =====================
+
+@api.route("/hello", methods=["GET"])
+def hello():
+    return jsonify({"message": "ok"}), 200
 
 
 # =====================
@@ -64,7 +97,6 @@ def login():
     if not user or not check_password_hash(user.password, password):
         return jsonify({"msg": "Invalid credentials"}), 401
 
-    # store identity as string (JWT standard sub claim)
     access_token = create_access_token(identity=str(user.userID))
 
     organizer = Organizer.query.filter_by(userID=user.userID).first()
@@ -97,7 +129,7 @@ def signup():
         user = User(name=name, email=email, password=hashed_password)
 
         db.session.add(user)
-        db.session.flush()  # get user.userID
+        db.session.flush()
 
         if role == "organizer":
             organizer = Organizer(
@@ -106,8 +138,7 @@ def signup():
                 org_link=data.get("org_link")
             )
             db.session.add(organizer)
-
-        if role == "volunteer":
+        elif role == "volunteer":
             volunteer = Volunteer(userID=user.userID)
             db.session.add(volunteer)
 
@@ -126,7 +157,7 @@ def signup():
 @api.route("/events", methods=["GET"])
 @jwt_required()
 def get_events():
-    current_user_id()  # validates token
+    current_user_id()
     events = Events.query.all()
     return jsonify({"events": [e.serialize() for e in events]}), 200
 
@@ -147,16 +178,12 @@ def get_event(event_id):
 @jwt_required()
 def create_event():
     try:
-        # ===============================
-        # AUTH / ORGANIZER
-        # ===============================
         user_id = current_user_id()
 
         organizer = Organizer.query.filter_by(userID=user_id).first()
         if not organizer:
             return jsonify({"msg": "Not an organizer"}), 403
 
-        # multipart or json
         if request.content_type and request.content_type.startswith("multipart/form-data"):
             data = request.form
             file = request.files.get("image")
@@ -164,9 +191,13 @@ def create_event():
             data = request.get_json() or {}
             file = None
 
-        required_fields = ["name", "event_date", "location", "category", "max_volunteers", "description"]
+        required_fields = [
+            "name", "event_date", "location",
+            "category", "max_volunteers", "description"
+        ]
+
         for field in required_fields:
-            if field not in data or not data[field]:
+            if not data.get(field):
                 return jsonify({"msg": f"Missing or empty field: {field}"}), 400
 
         try:
@@ -236,7 +267,7 @@ def update_event(event_id):
         event.category = data["category"]
 
     if "max_volunteers" in data:
-        event.max_volunteers = int(data["max_volunteers"]) if data["max_volunteers"] is not None else None
+        event.max_volunteers = int(data["max_volunteers"])
 
     if "description" in data:
         event.description = data["description"]
@@ -303,6 +334,13 @@ def get_inscription(event_id):
     return jsonify({"isInscribed": True, "inscription": insc.serialize()}), 200
 
 
+# Alias plural (para frontend)
+@api.route("/events/<int:event_id>/inscriptions", methods=["GET"])
+@jwt_required()
+def get_inscriptions_alias(event_id):
+    return get_inscription(event_id)
+
+
 # =====================
 # INTERESTS
 # =====================
@@ -312,7 +350,10 @@ def get_inscription(event_id):
 def add_interest(event_id):
     user_id = current_user_id()
 
-    existing = Interest.query.filter_by(userID=user_id, fav_event=event_id).first()
+    existing = Interest.query.filter_by(
+        userID=user_id, fav_event=event_id
+    ).first()
+
     if existing:
         return jsonify({"msg": "Already saved"}), 200
 
@@ -327,7 +368,9 @@ def add_interest(event_id):
 @jwt_required()
 def get_interest(event_id):
     user_id = current_user_id()
-    interest = Interest.query.filter_by(userID=user_id, fav_event=event_id).first()
+    interest = Interest.query.filter_by(
+        userID=user_id, fav_event=event_id
+    ).first()
     return jsonify({"isInterested": interest is not None}), 200
 
 
@@ -358,7 +401,7 @@ def contact():
 @api.route("/organizers/<int:organizer_id>", methods=["GET"])
 @jwt_required()
 def get_organizer_profile(organizer_id):
-    current_user_id()  # validate token
+    current_user_id()
 
     organizer = Organizer.query.get(organizer_id)
     if not organizer:
