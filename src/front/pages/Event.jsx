@@ -1,17 +1,17 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import useGlobalReducer from "../hooks/useGlobalReducer";
-import { FormNewEvent } from "../components/Form_new_event";
 
 export const EventsView = () => {
-  const { store, dispatch } = useGlobalReducer();
+  const { dispatch } = useGlobalReducer();
   const navigate = useNavigate();
 
   const token = localStorage.getItem("token");
   const storedUser = localStorage.getItem("user");
-  const storeUser = storedUser ? JSON.parse(storedUser) : null; // Obtener rol
+  const storeUser = storedUser ? JSON.parse(storedUser) : null;
 
   const backendUrl = import.meta.env.VITE_BACKEND_URL;
+  const today = new Date().toISOString().split("T")[0];
 
   const [form, setForm] = useState({
     name: "",
@@ -34,48 +34,29 @@ export const EventsView = () => {
   useEffect(() => {
     if (!token || storeUser?.role !== "organizer") {
       setUnauthorized(true);
-
       const timer = setTimeout(() => {
-        navigate("/campaignsboard"); // Redirige después de 5 segundos
+        navigate("/campaignsboard");
       }, 5000);
-
       return () => clearTimeout(timer);
     }
   }, [navigate, token, storeUser]);
 
-  /* =========================
-     LOAD EVENTS
-  ========================= */
-  useEffect(() => {
-    if (!token) return;
-
-    fetch(`${backendUrl}/api/events`, {
-      headers: { Authorization: `Bearer ${token}` }
-    })
-      .then(res => res.json())
-      .then(data => {
-        dispatch({ type: "set_events", payload: data.events || [] });
-      })
-      .catch(err => console.error("Fetch events error:", err));
-  }, [token, dispatch, backendUrl]);
-
-  /* =========================
-     FORM HANDLERS
-  ========================= */
-  const handleChange = e => {
+  const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
   /* =========================
      CREATE EVENT
   ========================= */
-  const handleSubmit = async e => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setError(null);
     setLoading(true);
 
     const formData = new FormData();
-    Object.entries(form).forEach(([key, value]) => formData.append(key, value));
+    Object.entries(form).forEach(([key, value]) =>
+      formData.append(key, value)
+    );
     if (image) formData.append("image", image);
 
     try {
@@ -85,22 +66,13 @@ export const EventsView = () => {
         body: formData
       });
 
-      const contentType = response.headers.get("content-type");
-
-      if (!contentType || !contentType.includes("application/json")) {
-        const text = await response.text();
-        throw new Error(text);
-      }
-
       const data = await response.json();
-
       if (!response.ok) throw new Error(data.msg || "Error creating event");
 
       dispatch({ type: "add_event", payload: data.event });
       navigate("/campaignsboard");
-
     } catch (err) {
-      console.error("Create event error:", err);
+      console.error(err);
       setError(err.message);
     } finally {
       setLoading(false);
@@ -108,149 +80,214 @@ export const EventsView = () => {
   };
 
   /* =========================
-     DELETE EVENT
-  ========================= */
-  const handleDelete = eventID => {
-    fetch(`${backendUrl}/api/events/${eventID}`, {
-      method: "DELETE",
-      headers: { Authorization: `Bearer ${token}` }
-    }).then(res => {
-      if (res.ok) dispatch({ type: "delete_event", payload: eventID });
-    });
-  };
-
-  /* =========================
-     RENDER
+     UNAUTHORIZED VIEW
   ========================= */
   if (unauthorized) {
     return (
       <div className="container mt-5 text-center">
         <h3 className="text-danger mb-3">Access Denied</h3>
         <p>Only organizers can create events.</p>
-        <p>Redirecting to Campaign Board </p>
+        <p>Redirecting to Campaign Board…</p>
       </div>
     );
   }
 
+  /* =========================
+     RENDER
+  ========================= */
   return (
-    <div className="container mt-4">
-      <h2>Create Event</h2>
+    <section
+      className="w-100 d-flex justify-content-center align-items-center"
+      style={{
+        minHeight: "100vh",
+        background:
+          "linear-gradient(135deg, rgba(46,139,192,0.08), rgba(72,187,120,0.08))"
+      }}
+    >
+      {/* FULL WIDTH WRAPPER */}
+      <div
+        className="card border-0 shadow-lg rounded-4"
+        style={{
+          width: "100%",
+          maxWidth: "1200px",
+          margin: "2rem"
+        }}
+      >
+        <div className="card-body p-4 p-md-5">
 
-      {error && <div className="alert alert-danger">{error}</div>}
+          <h2
+            className="text-center fw-bold mb-2"
+            style={{ color: "#2E8BC0" }}
+          >
+            Create Event
+          </h2>
 
-      <form onSubmit={handleSubmit} className="mb-4">
-        <input
-          className="form-control mb-2"
-          name="name"
-          placeholder="Event name"
-          value={form.name}
-          onChange={handleChange}
-          required
-        />
+          <p className="text-center text-muted mb-4">
+            Share your initiative and find volunteers
+          </p>
 
-        <input
-          type="date"
-          className="form-control mb-2"
-          name="event_date"
-          value={form.event_date}
-          onChange={handleChange}
-          required
-        />
+          {error && <div className="alert alert-danger">{error}</div>}
 
-        <input
-          className="form-control mb-2"
-          name="location"
-          placeholder="Location"
-          value={form.location}
-          onChange={handleChange}
-          required
-        />
-        {form.location.length > 3 && (
-          <div className="mb-2">
-            <iframe
-              width="100%"
-              height="150"
-              className="rounded border"
-              src={`https://www.google.com/maps?q=${encodeURIComponent(form.location)}&output=embed`}
-            ></iframe>
-          </div>
-        )}
+          <form onSubmit={handleSubmit}>
+            {/* EVENT NAME */}
+            <div className="mb-3">
+              <label className="form-label">Event name</label>
+              <input
+                className="form-control rounded-pill px-3"
+                name="name"
+                value={form.name}
+                onChange={handleChange}
+                required
+              />
+            </div>
 
-        <button
-          type="button"
-          className="form-control mb-2 text-start"
-          onClick={() => setShowCategoryModal(true)}
-        >
-          {form.category ? `Category: ${form.category}` : "Select category"}
-        </button>
+            {/* LOCATION + MAP */}
+            <div className="mb-3">
+              <label className="form-label">Location</label>
+              <input
+                className="form-control rounded-pill px-3"
+                name="location"
+                value={form.location}
+                onChange={handleChange}
+                required
+              />
 
-        {showCategoryModal && (
-          <div className="modal fade show d-block" tabIndex="-1">
-            <div className="modal-dialog modal-dialog-centered">
-              <div className="modal-content">
-                <div className="modal-header">
-                  <h5 className="modal-title">Select category</h5>
-                  <button
-                    type="button"
-                    className="btn-close"
-                    onClick={() => setShowCategoryModal(false)}
+              {form.location.length > 3 && (
+                <div className="mt-2">
+                  <iframe
+                    title="map-preview"
+                    width="100%"
+                    height="180"
+                    className="rounded border"
+                    src={`https://www.google.com/maps?q=${encodeURIComponent(
+                      form.location
+                    )}&output=embed`}
                   />
                 </div>
-                <div className="modal-body">
-                  {["Animals", "Environment", "Seniors", "Children", "Collection"].map(
-                    cat => (
+              )}
+            </div>
+
+            {/* EVENT DATE */}
+            <div className="mb-3">
+              <label className="form-label">Event date</label>
+              <input
+                type="date"
+                className="form-control rounded-pill px-3"
+                name="event_date"
+                value={form.event_date}
+                onChange={handleChange}
+                min={today}
+                required
+              />
+            </div>
+
+            {/* CATEGORY */}
+            <div className="mb-3">
+              <label className="form-label">Category</label>
+              <button
+                type="button"
+                className="form-control rounded-pill text-start px-3"
+                onClick={() => setShowCategoryModal(true)}
+              >
+                {form.category || "Select category"}
+              </button>
+            </div>
+
+            {/* CATEGORY MODAL */}
+            {showCategoryModal && (
+              <div className="modal fade show d-block" tabIndex="-1">
+                <div className="modal-dialog modal-dialog-centered">
+                  <div className="modal-content rounded-4">
+                    <div className="modal-header">
+                      <h5 className="modal-title">Select category</h5>
                       <button
-                        key={cat}
-                        className="btn btn-outline-primary w-100 mb-2"
-                        onClick={() => {
-                          setForm({ ...form, category: cat });
-                          setShowCategoryModal(false);
-                        }}
-                      >
-                        {cat}
-                      </button>
-                    )
-                  )}
+                        className="btn-close"
+                        onClick={() => setShowCategoryModal(false)}
+                      />
+                    </div>
+                    <div className="modal-body">
+                      {["Animals", "Environment", "Seniors", "Children", "Collection"].map(cat => (
+                        <button
+                          key={cat}
+                          type="button"
+                          className="btn btn-outline-primary w-100 mb-2 rounded-pill"
+                          onClick={() => {
+                            setForm({ ...form, category: cat });
+                            setShowCategoryModal(false);
+                          }}
+                        >
+                          {cat}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
                 </div>
               </div>
+            )}
+
+            {/* MAX VOLUNTEERS */}
+            <div className="mb-3">
+              <label className="form-label">Max volunteers</label>
+              <input
+                type="number"
+                className="form-control rounded-pill px-3"
+                name="max_volunteers"
+                value={form.max_volunteers}
+                onChange={handleChange}
+                required
+              />
             </div>
-          </div>
-        )}
 
-        <input
-          type="number"
-          className="form-control mb-2"
-          name="max_volunteers"
-          placeholder="Max volunteers"
-          value={form.max_volunteers}
-          onChange={handleChange}
-          required
-        />
+            {/* DESCRIPTION */}
+            <div className="mb-3">
+              <label className="form-label">Description</label>
+              <textarea
+                className="form-control rounded-4 px-3"
+                rows="4"
+                name="description"
+                value={form.description}
+                onChange={handleChange}
+                required
+              />
+            </div>
 
-        <textarea
-          className="form-control mb-2"
-          name="description"
-          placeholder="Description"
-          value={form.description}
-          onChange={handleChange}
-          required
-        />
+            {/* IMAGE */}
+            <div className="mb-4">
+              <label className="form-label">Event image</label>
+              <input
+                type="file"
+                className="form-control rounded-pill px-3"
+                accept="image/*"
+                onChange={(e) => setImage(e.target.files[0])}
+              />
+            </div>
 
-        <input
-          type="file"
-          className="form-control mb-3"
-          accept="image/*"
-          onChange={e => setImage(e.target.files[0])}
-        />
+            {/* SUBMIT */}
+            <div className="d-grid">
+              <button
+                type="submit"
+                className="btn rounded-pill py-2"
+                style={{ backgroundColor: "#2E8BC0", color: "#fff" }}
+                disabled={loading}
+              >
+                {loading ? "Creating…" : "Create Event"}
+              </button>
+            </div>
+          </form>
 
-        <button type="submit" className="btn btn-success" disabled={loading}>
-          {loading ? "Creating..." : "Create Event"}
-        </button>
-      </form>
+          <p className="text-center mt-4">
+            <Link
+              to="/campaignsboard"
+              className="text-decoration-none"
+              style={{ color: "#48BB78" }}
+            >
+              Back to campaigns
+            </Link>
+          </p>
 
-      <Link to="/campaignsboard" className="btn btn-outline-secondary mb-4">
-        Back to Campaigns
-      </Link>
-    </div>
+        </div>
+      </div>
+    </section>
   );
+
 };

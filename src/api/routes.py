@@ -147,6 +147,9 @@ def get_event(event_id):
 @jwt_required()
 def create_event():
     try:
+        # ===============================
+        # AUTH / ORGANIZER
+        # ===============================
         user_id = current_user_id()
 
         organizer = Organizer.query.filter_by(userID=user_id).first()
