@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useParams, useNavigate, Link } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import useGlobalReducer from "../hooks/useGlobalReducer";
 import { EventInscriptions } from "../components/EventInscriptions";
 import EventCountdown from "../components/EventCountdown";
@@ -26,7 +26,7 @@ function buildGoogleCalendarUrl({ title, dateISO, description, location }) {
     text: title || "Volunteer Event",
     dates: `${start}/${end}`,
     details: description || "",
-    location: location || ""
+    location: location || "",
   });
 
   return `https://calendar.google.com/calendar/render?${params.toString()}`;
@@ -37,46 +37,33 @@ export const DetailedCampaign = () => {
   const navigate = useNavigate();
   const { store } = useGlobalReducer();
 
-  // 🔥 TOKEN CONSISTENTE (store o localStorage)
   const token = store?.token || localStorage.getItem("token");
 
-  // 🔥 DEBUG DE TOKENS (ESTO ES LO QUE NECESITAMOS VER)
-  console.log("TOKENS CHECK 👉", {
-    storeToken: store?.token,
-    lsToken: localStorage.getItem("token"),
-    isAuth: store?.isAuth,
-    user: store?.user
-  });
-
-  /* ===== STATES ===== */
   const [campaign, setCampaign] = useState(null);
-  const [inscription, setInscription] = useState(null);
+  const [inscription, setInscription] = useState(null); // por si lo usas luego
   const [isInscribed, setIsInscribed] = useState(false);
   const [isInterested, setIsInterested] = useState(false);
-  
- console.log("role:", store.user?.role, "isInscribed:", isInscribed);
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [interestLoading, setInterestLoading] = useState(false);
 
   useEffect(() => {
-    if (!store.token || !store.isAuth) {
+    if (!store?.token || !store?.isAuth) {
       navigate("/login");
     }
-  }, [store.token, store.isAuth, navigate]);
+  }, [store?.token, store?.isAuth, navigate]);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         const backendUrl = import.meta.env.VITE_BACKEND_URL;
 
-        /* Obtener campaña */
+        // ===== FETCH CAMPAIGN =====
         const campaignRes = await fetch(`${backendUrl}/api/events/${id}`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
-
         });
 
         if (campaignRes.status === 401 || campaignRes.status === 403) {
@@ -89,45 +76,40 @@ export const DetailedCampaign = () => {
         const campaignData = await campaignRes.json();
         setCampaign(campaignData.event);
 
-        /* Verificar inscripción (solo volunteer) */
-        if (store.user?.role === "volunteer") {
-          const inscriptionRes = await fetch(`${backendUrl}/api/events/${id}/inscription`, {
-            headers: {
-              Authorization: `Bearer ${store.token}`,
-            },
-          });
+        // ===== VOLUNTEER ONLY: INSCRIPTION + INTEREST =====
+        if (store?.user?.role === "volunteer") {
+          // INSCRIPTION
+          const inscriptionRes = await fetch(
+            `${backendUrl}/api/events/${id}/inscription`,
+            {
+              headers: {
+                Authorization: `Bearer ${token}`,
+              },
+            }
+          );
 
-          const text = await inscriptionRes.text();
-          console.log("INSCRIPTION RAW 👉", text, "status:", inscriptionRes.status);
+          if (inscriptionRes.ok) {
+            const inscriptionData = await inscriptionRes.json();
 
-          let inscriptionData = {};
-          try {
-            inscriptionData = text ? JSON.parse(text) : {};
-          } catch {
-            inscriptionData = { raw: text };
-          }
+            const inscribed =
+              Boolean(inscriptionData?.inscription) ||
+              inscriptionData?.isInscribed === true ||
+              inscriptionData?.is_inscribed === true ||
+              inscriptionData?.inscribed === true;
 
-          console.log("INSCRIPTION PARSED 👉", inscriptionData);
-
-          const inscribed =
-            Boolean(inscriptionData?.inscription) ||
-            inscriptionData?.isInscribed === true ||
-            inscriptionData?.is_inscribed === true ||
-            inscriptionData?.inscribed === true;
-
-          if (inscriptionRes.ok && inscribed) {
-            setIsInscribed(true);
-            setInscription(inscriptionData.inscription || inscriptionData);
+            if (inscribed) {
+              setIsInscribed(true);
+              setInscription(inscriptionData.inscription || inscriptionData);
+            } else {
+              setIsInscribed(false);
+              setInscription(null);
+            }
           } else {
             setIsInscribed(false);
             setInscription(null);
           }
 
-          const interestRes = await fetch(
-            `${backendUrl}/api/events/${id}/interest`,
-            { headers: { Authorization: `Bearer ${store.token}` } }
-          );
-          // ===== FETCH INTEREST =====
+          // INTEREST (GET)
           const interestRes = await fetch(
             `${backendUrl}/api/events/${id}/interest`,
             {
@@ -137,8 +119,12 @@ export const DetailedCampaign = () => {
             }
           );
 
-          const interestData = await interestRes.json();
-          setIsInterested(Boolean(interestData?.isInterested));
+          if (interestRes.ok) {
+            const interestData = await interestRes.json();
+            setIsInterested(Boolean(interestData?.isInterested));
+          } else {
+            setIsInterested(false);
+          }
         }
       } catch (err) {
         console.error(err);
@@ -149,44 +135,37 @@ export const DetailedCampaign = () => {
     };
 
     fetchData();
-  }, [id, token, store?.user]);
+  }, [id, token, store?.user?.role, navigate]);
 
-  /* ===== HANDLER: ME INTERESA ===== */
+  // ===== HANDLER: SAVE INTEREST =====
   const handleInterest = async () => {
     try {
       setInterestLoading(true);
       const backendUrl = import.meta.env.VITE_BACKEND_URL;
 
-      const res = await fetch(
-        `${backendUrl}/api/events/${id}/interest`,
-        
-
+      const res = await fetch(`${backendUrl}/api/events/${id}/interest`, {
+        method: "POST",
         headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+          Authorization: `Bearer ${token}`,
+        },
+      });
 
       if (!res.ok) throw new Error("Failed to save interest");
 
-      if (!res.ok) throw new Error("Failed to save interest");
       setIsInterested(true);
     } catch (err) {
+      console.error(err);
       alert("Error saving interest");
     } finally {
       setInterestLoading(false);
     }
   };
 
-  /* ===== LOADING / ERROR ===== */
   if (loading) return <p className="text-center mt-4">Loading campaign...</p>;
 
   if (error || !campaign) {
     return (
       <div className="container mt-5 text-center">
-        <div className="alert alert-danger">
-          {error || "Campaign not found"}
-        </div>
         <div className="alert alert-danger">{error || "Campaign not found"}</div>
         <button
           className="btn btn-secondary"
@@ -205,7 +184,6 @@ export const DetailedCampaign = () => {
     location: campaign.location,
   });
 
-  /* ===== MAIN VIEW ===== */
   return (
     <div className="container mt-4">
       <button
@@ -219,19 +197,14 @@ export const DetailedCampaign = () => {
         <div className="card-body">
           <h2>{campaign.name}</h2>
 
-          <p><strong>Date:</strong> {campaign.event_date}</p>
-          <p><strong>Location:</strong> {campaign.location}</p>
+          <p>
+            <strong>Date:</strong> {campaign.event_date}
+          </p>
+          <p>
+            <strong>Location:</strong> {campaign.location}
+          </p>
 
-          {/* 🧪 DEBUG VISIBLE */}
-          <div className="alert alert-warning">
-            <strong>DEBUG</strong><br />
-            role: {store?.user?.role}<br />
-            isInscribed: {String(isInscribed)}<br />
-            token in store: {String(Boolean(store?.token))}<br />
-            token in localStorage: {String(Boolean(localStorage.getItem("token")))}
-          </div>
-
-          {/* ✅ COUNTDOWN + CALENDAR */}
+          {/* VOLUNTEER: COUNTDOWN + CALENDAR */}
           {store?.user?.role === "volunteer" && (
             <>
               <EventCountdown eventDateISO={campaign.event_date} />
