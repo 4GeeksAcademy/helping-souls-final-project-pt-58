@@ -56,7 +56,6 @@ export const DetailedCampaign = () => {
   
  console.log("role:", store.user?.role, "isInscribed:", isInscribed);
 
->>>>>>> 21c7ef2 (haciendo el temporizador y el boton de google)
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [interestLoading, setInterestLoading] = useState(false);
@@ -77,7 +76,7 @@ export const DetailedCampaign = () => {
           headers: {
             Authorization: `Bearer ${token}`,
           },
->>>>>>> 21c7ef2 (haciendo el temporizador y el boton de google)
+
         });
 
         if (campaignRes.status === 401 || campaignRes.status === 403) {
@@ -160,12 +159,8 @@ export const DetailedCampaign = () => {
 
       const res = await fetch(
         `${backendUrl}/api/events/${id}/interest`,
-        {
-          method: "POST",
-  <<<<<<< HEAD
-        headers: { Authorization: `Bearer ${store.token}` },
-      });
-=======
+        
+
         headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -173,7 +168,6 @@ export const DetailedCampaign = () => {
       );
 
       if (!res.ok) throw new Error("Failed to save interest");
->>>>>>> 21c7ef2 (haciendo el temporizador y el boton de google)
 
       if (!res.ok) throw new Error("Failed to save interest");
       setIsInterested(true);
@@ -218,7 +212,6 @@ export const DetailedCampaign = () => {
         className="btn btn-outline-secondary mb-4"
         onClick={() => navigate("/campaignsboard")}
       >
->>>>>>> 21c7ef2 (haciendo el temporizador y el boton de google)
         ← Back to campaigns
       </button>
 
@@ -300,7 +293,6 @@ export const DetailedCampaign = () => {
                 </div>
               )}
             </>
->>>>>>> 21c7ef2 (haciendo el temporizador y el boton de google)
           )}
         </div>
       </div>
