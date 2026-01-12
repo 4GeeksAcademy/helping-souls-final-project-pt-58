@@ -32,6 +32,44 @@ function buildGoogleCalendarUrl({ title, dateISO, description, location }) {
   return `https://calendar.google.com/calendar/render?${params.toString()}`;
 }
 
+/* ===== Google Maps helper INLINE ===== */
+function GoogleMapEmbed({ location, height = 320 }) {
+  const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
+
+  if (!location) return null;
+
+  // Sin key (rápido)
+  const fallbackSrc = `https://www.google.com/maps?q=${encodeURIComponent(location)}&output=embed`;
+
+  // Con key (recomendado, más estable)
+  const src = apiKey
+    ? `https://www.google.com/maps/embed/v1/place?key=${apiKey}&q=${encodeURIComponent(location)}`
+    : fallbackSrc;
+
+  return (
+    <div
+      style={{
+        width: "100%",
+        borderRadius: "18px",
+        overflow: "hidden",
+        boxShadow: "0 4px 12px rgba(0,0,0,0.06)",
+        background: "#fff",
+      }}
+    >
+      <iframe
+        title="Google Map"
+        width="100%"
+        height={height}
+        style={{ border: 0, display: "block" }}
+        loading="lazy"
+        allowFullScreen
+        referrerPolicy="no-referrer-when-downgrade"
+        src={src}
+      />
+    </div>
+  );
+}
+
 export const DetailedCampaign = () => {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -269,6 +307,14 @@ export const DetailedCampaign = () => {
           )}
         </div>
       </div>
+
+      {/* ✅ MAPA ABAJO (sin romper diseño) */}
+      {campaign?.location && (
+        <div className="mt-4">
+          <h5 className="mb-2">Ubicación en el mapa</h5>
+          <GoogleMapEmbed location={campaign.location} height={320} />
+        </div>
+      )}
     </div>
   );
 };
