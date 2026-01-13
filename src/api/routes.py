@@ -55,7 +55,7 @@ ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg", "gif"}
 
 stripe.api_key = os.getenv("STRIPE_SECRET_KEY")
 
-FRONTEND_URL = "https://jubilant-fiesta-jrj7v6gp65r3pjjg-3000.app.github.dev/"
+FRONTEND_URL = "https://stunning-space-broccoli-q7gqrq7g5xxxf547-3000.app.github.dev/"
 
 # =====================
 # HELPERS
@@ -434,25 +434,29 @@ def get_event_detail(event_id):
 def delete_event(event_id):
     user_id = get_jwt_identity()
 
-    # Buscar organizer asociado al user
+    # Validar organizer
     organizer = Organizer.query.filter_by(userID=user_id).first()
-
     if not organizer:
         return jsonify({"msg": "Only organizers can delete events"}), 403
 
     # Buscar evento
     event = Events.query.get(event_id)
-
     if not event:
         return jsonify({"msg": "Event not found"}), 404
 
-    # Verificar que el organizer sea el dueño del evento
+    # Verificar que el evento pertenece al organizer
     if event.organizerID != organizer.organizerID:
         return jsonify({"msg": "You are not allowed to delete this event"}), 403
 
     try:
+        # Eliminar relaciones primero
+        Inscription.query.filter_by(eventID=event_id).delete()
+        Interest.query.filter_by(fav_event=event_id).delete()
+
+        # Eliminar evento
         db.session.delete(event)
         db.session.commit()
+
         return jsonify({"msg": "Event deleted successfully"}), 200
 
     except Exception as e:
@@ -461,6 +465,7 @@ def delete_event(event_id):
             "msg": "Error deleting event",
             "error": str(e)
         }), 500
+
 
 
 # Endpoints para inscripcion a campañas

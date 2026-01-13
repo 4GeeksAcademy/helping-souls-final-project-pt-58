@@ -25,14 +25,15 @@ export const CampaignsBoard = () => {
   const toDateObj = toDate(to);
 
   const categoryStyles = {
-  environmental: { bg: "#E8F5E9", color: "#2E7D32" },
-  animal: { bg: "#FFF3E0", color: "#EF6C00" },
-  humanitarian: { bg: "#E3F2FD", color: "#1565C0" },
-  default: { bg: "#F5F5F5", color: "#424242" },
-};
+    environmental: { bg: "#9ECAD6", color: "#fff" }, // celeste claro
+    animal: { bg: "#748DAE", color: "#fff" },        // azul medio
+    humanitarian: { bg: "#F5CBCB", color: "#000" },  // rosa
+    default: { bg: "#FFEAEA", color: "#000" },       // rosa muy claro
+  };
 
-const getCategoryStyle = (category = "") =>
-  categoryStyles[category.toLowerCase()] || categoryStyles.default;
+  const getCategoryStyle = (category = "") =>
+    categoryStyles[category.toLowerCase()] || categoryStyles.default;
+
   /* Fetch campaigns */
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -73,7 +74,8 @@ const getCategoryStyle = (category = "") =>
 
   /* Filters logic */
   const filteredCampaigns = campaigns.filter((c) => {
-    if (category && !(c.category || "").toLowerCase().includes(category)) return false;
+    if (category && !(c.category || "").toLowerCase().includes(category))
+      return false;
     if (city && !(c.city || "").toLowerCase().includes(city)) return false;
 
     if (fromDate || toDateObj) {
@@ -90,7 +92,7 @@ const getCategoryStyle = (category = "") =>
   if (loading) return <p className="text-center mt-4">Loading campaigns...</p>;
 
   /* ===============================
-     NOT AUTHORIZED (UNCHANGED)
+     NOT AUTHORIZED
   ================================ */
   if (!isAuthorized) {
     return (
@@ -191,69 +193,94 @@ const getCategoryStyle = (category = "") =>
 
       {/* Campaign cards */}
       <div className="d-flex flex-column gap-3 mt-4">
-        {filteredCampaigns.map((campaign) => (
-          <div
-            key={campaign.eventID}
-            className="d-flex align-items-center p-3"
-            style={{
-              backgroundColor: "#fff",
-              borderRadius: "18px",
-              boxShadow: "0 4px 12px rgba(0,0,0,0.06)",
-            }}
-          >
-            <img
-              src={
-                campaign.image
-                  ? campaign.image.replace(
-                    "/upload/",
-                    "/upload/f_auto,q_auto,w_120,h_120,c_fill/"
-                  )
-                  : "https://placehold.co/120"
-              }
-              alt={campaign.name}
+        {filteredCampaigns.map((campaign) => {
+          const isOwnCampaign = storeUser?.userID === campaign.organizerID; // NUEVO
+
+          return (
+            <div
+              key={campaign.eventID}
+              className="d-flex align-items-center p-3"
               style={{
-                width: "90px",
-                height: "90px",
-                borderRadius: "50%",
-                objectFit: "cover",
-                marginRight: "1rem",
+                backgroundColor: "#fff",
+                borderRadius: "18px",
+                boxShadow: "0 4px 12px rgba(0,0,0,0.06)",
+                position: "relative",
               }}
-            />
-
-            <div className="flex-grow-1">
-              <div className="d-flex align-items-center gap-2 mb-1">
-                <h5 className="mb-0">{campaign.name}</h5>
-
+            >
+              {/* Badge para campaña propia */}
+              {isOwnCampaign && (
                 <span
                   style={{
-                    backgroundColor: getCategoryStyle(campaign.category).bg,
-                    color: getCategoryStyle(campaign.category).color,
-                    padding: "2px 10px",
+                    position: "absolute",
+                    top: "10px",
+                    right: "10px",
+                    backgroundColor: "#2E7D32", 
+                    color: "#fff",               
+                    padding: "4px 8px",
                     borderRadius: "12px",
                     fontSize: "0.75rem",
-                    fontWeight: 500,
-                    whiteSpace: "nowrap",
+                    fontWeight: 600,
                   }}
                 >
-                  {campaign.category}
+                  Your campaign
                 </span>
+              )}
+
+
+              <img
+                src={
+                  campaign.image
+                    ? campaign.image.replace(
+                      "/upload/",
+                      "/upload/f_auto,q_auto,w_120,h_120,c_fill/"
+                    )
+                    : "https://placehold.co/120"
+                }
+                alt={campaign.name}
+                style={{
+                  width: "90px",
+                  height: "90px",
+                  borderRadius: "50%",
+                  objectFit: "cover",
+                  marginRight: "1rem",
+                }}
+              />
+
+              <div className="flex-grow-1">
+                <div className="d-flex align-items-center gap-2 mb-1">
+                  <h5 className="mb-0">{campaign.name}</h5>
+
+                  <span
+                    style={{
+                      backgroundColor: getCategoryStyle(campaign.category).bg,
+                      color: getCategoryStyle(campaign.category).color,
+                      padding: "2px 10px",
+                      borderRadius: "12px",
+                      fontSize: "0.75rem",
+                      fontWeight: 500,
+                      whiteSpace: "nowrap",
+                    }}
+                  >
+                    {campaign.category}
+                  </span>
+                </div>
+
+                <div className="text-muted" style={{ fontSize: "0.85rem" }}>
+                  <div>📍 {campaign.city}</div>
+                  <div>📅 {campaign.event_date}</div>
+                </div>
               </div>
 
-              <div className="text-muted" style={{ fontSize: "0.85rem" }}>
-                <div>📍 {campaign.city}</div>
-                <div>📅 {campaign.event_date}</div>
-              </div>
+              <button
+                className="btn"
+                style={{ backgroundColor: "#748DAE", color: "#fff", borderRadius: "18px" }}
+                onClick={() => navigate(`/campaigns/${campaign.eventID}`)}
+              >
+                View
+              </button>
             </div>
-
-            <button
-              className="btn"
-              style={{ backgroundColor: "#748DAE", color: "#fff", borderRadius: "18px" }}
-              onClick={() => navigate(`/campaigns/${campaign.eventID}`)}
-            >
-              View
-            </button>
-          </div>
-        ))}
+          );
+        })}
       </div>
     </div>
   );
