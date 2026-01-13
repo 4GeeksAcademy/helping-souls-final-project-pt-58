@@ -429,6 +429,40 @@ def get_event_detail(event_id):
     }), 200
 
 
+@api.route("/events/<int:event_id>", methods=["DELETE"])
+@jwt_required()
+def delete_event(event_id):
+    user_id = get_jwt_identity()
+
+    # Buscar organizer asociado al user
+    organizer = Organizer.query.filter_by(userID=user_id).first()
+
+    if not organizer:
+        return jsonify({"msg": "Only organizers can delete events"}), 403
+
+    # Buscar evento
+    event = Events.query.get(event_id)
+
+    if not event:
+        return jsonify({"msg": "Event not found"}), 404
+
+    # Verificar que el organizer sea el dueño del evento
+    if event.organizerID != organizer.organizerID:
+        return jsonify({"msg": "You are not allowed to delete this event"}), 403
+
+    try:
+        db.session.delete(event)
+        db.session.commit()
+        return jsonify({"msg": "Event deleted successfully"}), 200
+
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({
+            "msg": "Error deleting event",
+            "error": str(e)
+        }), 500
+
+
 # Endpoints para inscripcion a campañas
 
 

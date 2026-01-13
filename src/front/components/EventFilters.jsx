@@ -7,7 +7,7 @@ export const EventFilters = () => {
   const [params, setParams] = useSearchParams();
 
   const category = params.get("category") || "";
-  const location = params.get("location") || "";
+  const city = params.get("city") || "";          // 👈 CAMBIO
   const from = params.get("from") || "";
   const to = params.get("to") || "";
 
@@ -18,7 +18,7 @@ export const EventFilters = () => {
       if (!value) next.delete(key);
       else next.set(key, value);
     });
- 
+
     setParams(next);
   };
 
@@ -27,6 +27,8 @@ export const EventFilters = () => {
   return (
     <div className="card p-3 mb-3">
       <div className="row g-2 align-items-end">
+
+        {/* Category */}
         <div className="col-12 col-md-3">
           <label className="form-label">Category</label>
           <select
@@ -43,16 +45,18 @@ export const EventFilters = () => {
           </select>
         </div>
 
+        {/* City */}
         <div className="col-12 col-md-3">
-          <label className="form-label">Location</label>
+          <label className="form-label">City</label>
           <input
             className="form-control"
-            value={location}
-            placeholder="City, State or Address"
-            onChange={(e) => update({ location: e.target.value })}
+            value={city}
+            placeholder="Search by city"
+            onChange={(e) => update({ city: e.target.value })}  
           />
         </div>
 
+        {/* From */}
         <div className="col-6 col-md-2">
           <label className="form-label">From</label>
           <input
@@ -63,6 +67,7 @@ export const EventFilters = () => {
           />
         </div>
 
+        {/* To */}
         <div className="col-6 col-md-2">
           <label className="form-label">To</label>
           <input
@@ -73,11 +78,13 @@ export const EventFilters = () => {
           />
         </div>
 
+        {/* Clear */}
         <div className="col-12 col-md-2 d-flex gap-2">
           <button className="btn btn-outline-secondary w-100" onClick={clearAll}>
             Clear
           </button>
         </div>
+
       </div>
     </div>
   );

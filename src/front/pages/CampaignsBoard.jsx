@@ -13,7 +13,7 @@ export const CampaignsBoard = () => {
 
   const [params] = useSearchParams();
   const category = (params.get("category") || "").toLowerCase();
-  const location = (params.get("location") || "").toLowerCase();
+  const city = (params.get("city") || "").toLowerCase();
   const from = params.get("from") || "";
   const to = params.get("to") || "";
 
@@ -24,6 +24,15 @@ export const CampaignsBoard = () => {
   const fromDate = toDate(from);
   const toDateObj = toDate(to);
 
+  const categoryStyles = {
+  environmental: { bg: "#E8F5E9", color: "#2E7D32" },
+  animal: { bg: "#FFF3E0", color: "#EF6C00" },
+  humanitarian: { bg: "#E3F2FD", color: "#1565C0" },
+  default: { bg: "#F5F5F5", color: "#424242" },
+};
+
+const getCategoryStyle = (category = "") =>
+  categoryStyles[category.toLowerCase()] || categoryStyles.default;
   /* Fetch campaigns */
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -65,7 +74,7 @@ export const CampaignsBoard = () => {
   /* Filters logic */
   const filteredCampaigns = campaigns.filter((c) => {
     if (category && !(c.category || "").toLowerCase().includes(category)) return false;
-    if (location && !(c.location || "").toLowerCase().includes(location)) return false;
+    if (city && !(c.city || "").toLowerCase().includes(city)) return false;
 
     if (fromDate || toDateObj) {
       if (!c.event_date) return false;
@@ -212,19 +221,28 @@ export const CampaignsBoard = () => {
             />
 
             <div className="flex-grow-1">
-              <h5 className="mb-1">{campaign.name}</h5>
+              <div className="d-flex align-items-center gap-2 mb-1">
+                <h5 className="mb-0">{campaign.name}</h5>
 
-              <small className="text-muted d-block">
-                📍 {campaign.city}
-              </small>
+                <span
+                  style={{
+                    backgroundColor: getCategoryStyle(campaign.category).bg,
+                    color: getCategoryStyle(campaign.category).color,
+                    padding: "2px 10px",
+                    borderRadius: "12px",
+                    fontSize: "0.75rem",
+                    fontWeight: 500,
+                    whiteSpace: "nowrap",
+                  }}
+                >
+                  {campaign.category}
+                </span>
+              </div>
 
-              <small className="text-muted d-block">
-                🏷️ {campaign.category}
-              </small>
-
-              <small className="text-muted d-block">
-                📅 {campaign.event_date}
-              </small>
+              <div className="text-muted" style={{ fontSize: "0.85rem" }}>
+                <div>📍 {campaign.city}</div>
+                <div>📅 {campaign.event_date}</div>
+              </div>
             </div>
 
             <button
