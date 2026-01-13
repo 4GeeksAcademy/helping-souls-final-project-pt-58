@@ -277,7 +277,7 @@ export const CampaignsBoard = () => {
                       "/upload/",
                       "/upload/f_auto,q_auto,w_120,h_120,c_fill/"
                     )
-                  : "https://via.placeholder.com/120"
+                  : "https://placehold.co/120"
               }
               alt={campaign.name}
               style={{
