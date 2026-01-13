@@ -1,4 +1,5 @@
 from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy import String, Boolean, ForeignKey, Date, Time
 from sqlalchemy import String, ForeignKey, Date
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from datetime import date
@@ -128,10 +129,25 @@ class Donations(db.Model):
             "donationID": self.donationID,
             "amount": self.amount
         }
+    
+
 
 class Events(db.Model):
     __tablename__ = "events"
 
+    eventID = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(120), nullable=False)
+    organizerID = db.Column(db.Integer, db.ForeignKey("organizer.organizerID"), nullable=False)
+
+    event_date = db.Column(db.Date, nullable=False)
+    event_time = db.Column(Time, nullable=True)   
+    city = db.Column(db.String(120), nullable=True)  
+
+    location = db.Column(db.String(200), nullable=False)
+    category = db.Column(db.String(120), nullable=False)
+    description = db.Column(db.String(320), nullable=False)
+    max_volunteers = db.Column(db.Integer, nullable=False)
+    image = db.Column(db.String(800), nullable=True)
     eventID: Mapped[int] = mapped_column(primary_key=True)
     name: Mapped[str] = mapped_column(String(120), nullable=False)
     organizerID: Mapped[int] = mapped_column(ForeignKey("organizer.organizerID"), nullable=False)
@@ -150,6 +166,14 @@ class Events(db.Model):
             "eventID": self.eventID,
             "name": self.name,
             "organizerID": self.organizerID,
+            "event_date": self.event_date.isoformat(),
+            "event_time": self.event_time.strftime("%H:%M") if self.event_time else None,
+            "city": self.city,
+            "location": self.location,
+            "category": self.category,
+            "description": self.description,
+            "max_volunteers": self.max_volunteers,
+            "image": self.image,
             "event_date": self.event_date.isoformat() if self.event_date else None,  # ✅ JSON safe
             "category": self.category,
             "description": self.description,

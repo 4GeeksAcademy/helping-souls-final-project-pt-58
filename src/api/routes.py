@@ -178,12 +178,14 @@ def get_event(event_id):
 @jwt_required()
 def create_event():
     try:
+        user_id = get_jwt_identity()
         user_id = current_user_id()
 
         organizer = Organizer.query.filter_by(userID=user_id).first()
         if not organizer:
             return jsonify({"msg": "Not an organizer"}), 403
 
+        # ===== Detectar tipo de request =====
         if request.content_type and request.content_type.startswith("multipart/form-data"):
             data = request.form
             file = request.files.get("image")
@@ -191,20 +193,64 @@ def create_event():
             data = request.get_json() or {}
             file = None
 
+        # ===== Campos requeridos =====
         required_fields = [
+            "name",
+            "event_date",
+            "event_time",
+            "city",
+            "location",
+            "category",
+            "max_volunteers",
+            "description"
             "name", "event_date", "location",
             "category", "max_volunteers", "description"
         ]
 
         for field in required_fields:
             if not data.get(field):
+                return jsonify({
+                    "msg": f"Missing or empty field: {field}"
+                }), 400
                 return jsonify({"msg": f"Missing or empty field: {field}"}), 400
 
+        # ===== Parse fecha =====
         try:
+            event_date = datetime.fromisoformat(
+                str(data["event_date"])
+            ).date()
             event_date = datetime.fromisoformat(str(data["event_date"])).date()
         except ValueError:
-            return jsonify({"msg": "Invalid date format. Use YYYY-MM-DD"}), 400
+            return jsonify({
+                "msg": "Invalid event_date format. Use YYYY-MM-DD"
+            }), 400
 
+        # ===== Parse hora =====
+        try:
+            event_time = datetime.strptime(
+                data["event_time"],
+                "%H:%M"
+            ).time()
+        except ValueError:
+            return jsonify({
+                "msg": "Invalid event_time format. Use HH:MM"
+            }), 400
+
+        # ===== Imagen (Cloudinary) =====
+        image_url = None
+        if file and file.filename:
+            if not allowed_file(file.filename):
+                return jsonify({
+                    "msg": "Invalid image format"
+                }), 400
+
+            upload_result = cloudinary.uploader.upload(
+                file,
+                folder="events"
+            )
+            image_url = upload_result.get("secure_url")
+
+        # ===== Crear evento =====
         image_filename = None
         if file and file.filename:
             if not allowed_file(file.filename):
@@ -218,6 +264,8 @@ def create_event():
             organizerID=organizer.organizerID,
             name=data["name"],
             event_date=event_date,
+            event_time=event_time,
+            city=data["city"],
             location=data["location"],
             category=data["category"],
             max_volunteers=int(data["max_volunteers"]),
@@ -231,6 +279,15 @@ def create_event():
 
     except Exception as e:
         db.session.rollback()
+        print(" ERROR EN /new_events ")
+        print(e)
+        import traceback
+        traceback.print_exc()
+
+        return jsonify({
+            "msg": "Internal server error",
+            "error": str(e)
+        }), 500
         return jsonify({"msg": "Internal server error", "error": str(e)}), 500
 
 
@@ -266,6 +323,59 @@ def update_event(event_id):
     if "category" in data:
         event.category = data["category"]
 
+    events = Events.query.all()
+    
+
+    return jsonify({
+        "total": len(events),
+        "events": [
+            {
+                "eventID": event.eventID,
+                "name": event.name,
+                "event_date": event.event_date.isoformat(),
+                "location": event.location,
+                "category": event.category,
+                "max_volunteers": event.max_volunteers,
+                "description": event.description,
+                "organizerID": event.organizerID,
+                "image": event.image   
+            }
+            for event in events
+        ]
+    }), 200
+
+
+@api.route("/events/<int:event_id>", methods=["GET"])
+@jwt_required()
+def get_event_detail(event_id):
+
+    user_id = get_jwt_identity()
+
+    event = Events.query.get(event_id)
+    if not event:
+        return jsonify({"msg": "Event not found"}), 404
+
+    organizer = Organizer.query.get(event.organizerID) if event.organizerID else None
+
+    return jsonify({
+        "event": {
+            "eventID": event.eventID,
+            "name": event.name,
+            "event_date": event.event_date.isoformat() if event.event_date else None,
+            "event_time": event.event_time.strftime("%H:%M") if event.event_time else None,
+            "city": event.city,
+            "location": event.location,
+            "category": event.category,
+            "max_volunteers": event.max_volunteers,
+            "description": event.description,
+            "organizerID": event.organizerID,
+            "organizer_name": organizer.name if organizer else None,
+            "image": event.image
+        }
+    }), 200
+
+
+# Endpoints para inscripcion a campañas
     if "max_volunteers" in data:
         event.max_volunteers = int(data["max_volunteers"])
 
