@@ -148,9 +148,9 @@ class Events(db.Model):
 
     location = db.Column(db.String(200), nullable=False)
     category = db.Column(db.String(120), nullable=False)
-    description = db.Column(db.String(320), nullable=False)
+    description = db.Column(db.Text, nullable=False)
     max_volunteers = db.Column(db.Integer, nullable=False)
-    image = db.Column(db.String(800), nullable=True)
+    image = db.Column(db.Text, nullable=True)
 
     def serialize(self):
         return {

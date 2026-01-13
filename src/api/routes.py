@@ -60,8 +60,11 @@ FRONTEND_URL = "https://jubilant-fiesta-jrj7v6gp65r3pjjg-3000.app.github.dev/"
 # =====================
 # HELPERS
 # =====================
+
+
 def allowed_file(filename):
     return "." in filename and filename.rsplit(".", 1)[1].lower() in ALLOWED_EXTENSIONS
+
 
 # =====================
 # BLUEPRINT
@@ -78,6 +81,7 @@ cloudinary.config(
     api_secret=os.environ.get("CLOUDINARY_API_SECRET"),
     secure=True
 )
+
 
 @api.route('/hello', methods=['POST', 'GET'])
 def handle_hello():
@@ -117,7 +121,7 @@ def login():
 
     # Serializar usuario y agregar rol
     user_data = user.serialize()
-    user_data["role"] = role  #  agregamos el rol aquí
+    user_data["role"] = role  # agregamos el rol aquí
 
     return jsonify({
         "msg": "Login successful",
@@ -200,13 +204,11 @@ def signup():
         }), 500
 
 
-
 @api.route("/cloudinary_test", methods=["POST"])
 def cloudinary_test():
     file = request.files.get("image")
     result = cloudinary.uploader.upload(file)
     return jsonify({"url": result["secure_url"]}), 200
-
 
 
 # POST Y GET DE EVENTOS
@@ -318,6 +320,7 @@ def create_event():
 
 #  Editar evento
 
+
 @api.route("/events/<int:event_id>", methods=["PUT"])
 @jwt_required()
 def update_event(event_id):
@@ -339,17 +342,23 @@ def update_event(event_id):
         return jsonify({"msg": "Not authorized to edit this event"}), 403
 
     # 4) Actualizar campos si vienen en el body
-    if "name" in data: event.name = data["name"]
+    if "name" in data:
+        event.name = data["name"]
     if "event_date" in data:
         try:
-            event.event_date = datetime.fromisoformat(data["event_date"]).date()
+            event.event_date = datetime.fromisoformat(
+                data["event_date"]).date()
         except ValueError:
             return jsonify({"msg": "Invalid date format. Use YYYY-MM-DD"}), 400
-    if "location" in data: event.location = data["location"]
-    if "category" in data: event.category = data["category"]
+    if "location" in data:
+        event.location = data["location"]
+    if "category" in data:
+        event.category = data["category"]
     if "max_volunteers" in data:
-        event.max_volunteers = int(data["max_volunteers"]) if data["max_volunteers"] is not None else None
-    if "description" in data: event.description = data["description"]
+        event.max_volunteers = int(
+            data["max_volunteers"]) if data["max_volunteers"] is not None else None
+    if "description" in data:
+        event.description = data["description"]
 
     db.session.commit()
 
@@ -360,6 +369,7 @@ def update_event(event_id):
 
 # ////////////////
 
+
 @api.route("/events", methods=["GET"])
 @jwt_required()
 def get_all_events():
@@ -367,7 +377,6 @@ def get_all_events():
     user_id = get_jwt_identity()  # solo valida token
 
     events = Events.query.all()
-    
 
     return jsonify({
         "total": len(events),
@@ -381,7 +390,7 @@ def get_all_events():
                 "max_volunteers": event.max_volunteers,
                 "description": event.description,
                 "organizerID": event.organizerID,
-                "image": event.image   
+                "image": event.image
             }
             for event in events
         ]
@@ -398,7 +407,8 @@ def get_event_detail(event_id):
     if not event:
         return jsonify({"msg": "Event not found"}), 404
 
-    organizer = Organizer.query.get(event.organizerID) if event.organizerID else None
+    organizer = Organizer.query.get(
+        event.organizerID) if event.organizerID else None
 
     return jsonify({
         "event": {
@@ -569,7 +579,8 @@ def get_event_inscriptions(event_id):
         ]
     }), 200
 
-#endpoint para aprovar o rechazar solicitudes de inscripcion
+# endpoint para aprovar o rechazar solicitudes de inscripcion
+
 
 @api.route("/inscriptions/<int:inscription_id>", methods=["PUT"])
 @jwt_required()
@@ -620,7 +631,8 @@ def update_inscription(inscription_id):
         "status": inscription.status
     }), 200
 
-#Endpoints para boton de Me interesa.-----------------------------------------
+# Endpoints para boton de Me interesa.-----------------------------------------
+
 
 @api.route("/events/<int:event_id>/interest", methods=["POST"])
 @jwt_required()
@@ -662,6 +674,7 @@ def add_interest(event_id):
         "interest": interest.serialize()
     }), 201
 
+
 @api.route("/events/<int:event_id>/interest", methods=["GET"])
 @jwt_required()
 def get_interest(event_id):
@@ -679,6 +692,7 @@ def get_interest(event_id):
     return jsonify({
         "isInterested": interest is not None
     }), 200
+
 
 @api.route("/my/interests", methods=["GET"])
 @jwt_required()
@@ -759,10 +773,12 @@ def create_checkout_session():
         return jsonify({"error": str(e)}), 500
 
 # FORMULARIO DE CONTACTO
+
+
 @api.route("/contact", methods=["POST"])
 def contact():
     try:
-        #verificar data
+        # verificar data
         if request.content_type and request.content_type.startswith("multipart/form-data"):
             data = request.form
         else:
@@ -770,12 +786,12 @@ def contact():
 
         if not data:
             return jsonify({"msg": "No data provided"}), 400
-        #campos requeridos
+        # campos requeridos
         required_fields = ["name", "email", "message"]
         for field in required_fields:
             if field not in data or not data[field].strip():
                 return jsonify({"msg": f"Missing or empty field: {field}"}), 400
-        #guardar datos
+        # guardar datos
         contact_message = ContactMessage(
             name=data["name"].strip(),
             email=data["email"].strip(),
@@ -796,8 +812,10 @@ def contact():
             "msg": "Internal server error",
             "error": str(e)
         }), 500
-    
-#For organizer profile
+
+# For organizer profile
+
+
 @api.route("/organizers/<int:organizer_id>", methods=["GET"])
 @jwt_required()
 def get_organizer_profile(organizer_id):
@@ -831,4 +849,3 @@ def get_organizer_profile(organizer_id):
         ],
         "total_events": len(events)
     }), 200
-
