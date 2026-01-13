@@ -196,9 +196,9 @@ export const CampaignsBoard = () => {
               src={
                 campaign.image
                   ? campaign.image.replace(
-                      "/upload/",
-                      "/upload/f_auto,q_auto,w_120,h_120,c_fill/"
-                    )
+                    "/upload/",
+                    "/upload/f_auto,q_auto,w_120,h_120,c_fill/"
+                  )
                   : "https://placehold.co/120"
               }
               alt={campaign.name}
@@ -213,8 +213,18 @@ export const CampaignsBoard = () => {
 
             <div className="flex-grow-1">
               <h5 className="mb-1">{campaign.name}</h5>
-              <small className="text-muted d-block">📍 {campaign.location}</small>
-              <small className="text-muted d-block">📅 {campaign.event_date}</small>
+
+              <small className="text-muted d-block">
+                📍 {campaign.city}
+              </small>
+
+              <small className="text-muted d-block">
+                🏷️ {campaign.category}
+              </small>
+
+              <small className="text-muted d-block">
+                📅 {campaign.event_date}
+              </small>
             </div>
 
             <button

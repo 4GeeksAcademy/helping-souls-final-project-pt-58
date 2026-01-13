@@ -386,6 +386,7 @@ def get_all_events():
                 "name": event.name,
                 "event_date": event.event_date.isoformat(),
                 "location": event.location,
+                "city":event.city,
                 "category": event.category,
                 "max_volunteers": event.max_volunteers,
                 "description": event.description,
