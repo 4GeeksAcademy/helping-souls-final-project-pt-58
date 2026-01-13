@@ -1,14 +1,8 @@
 """empty message
 
-<<<<<<<< HEAD:migrations/versions/1dedb77fc82e_.py
-Revision ID: 878605f3257d
+Revision ID: e1462b86e1e9
 Revises: 
-Create Date: 2026-01-10 17:59:10.900854
-========
-Revision ID: b6d47086bf9d
-Revises: 
-Create Date: 2026-01-09 02:09:51.062478
->>>>>>>> 21c7ef2 (haciendo el temporizador y el boton de google):migrations/versions/b6d47086bf9d_.py
+Create Date: 2026-01-09 04:07:33.917505
 
 """
 from alembic import op
@@ -16,7 +10,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = '1dedb77fc82e'
+revision = 'e1462b86e1e9'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -68,7 +62,7 @@ def upgrade():
     sa.Column('description', sa.String(length=320), nullable=False),
     sa.Column('location', sa.String(length=200), nullable=False),
     sa.Column('max_volunteers', sa.Integer(), nullable=False),
-    sa.Column('image', sa.String(length=800), nullable=True),
+    sa.Column('image', sa.String(length=200), nullable=True),
     sa.ForeignKeyConstraint(['organizerID'], ['organizer.organizerID'], ),
     sa.PrimaryKeyConstraint('eventID')
     )
