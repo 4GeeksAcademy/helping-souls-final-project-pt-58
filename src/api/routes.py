@@ -55,7 +55,7 @@ ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg", "gif"}
 
 stripe.api_key = os.getenv("STRIPE_SECRET_KEY")
 
-FRONTEND_URL = "https://urban-goggles-7v4vwpqgx4792x7w6-3000.app.github.dev/"
+FRONTEND_URL = "https://jubilant-fiesta-jrj7v6gp65r3pjjg-3000.app.github.dev/"
 
 # =====================
 # HELPERS
