@@ -16,11 +16,14 @@ export const EventsView = () => {
   const [form, setForm] = useState({
     name: "",
     event_date: "",
+    event_time: "",
+    city: "",
     location: "",
     category: "",
     max_volunteers: "",
     description: ""
   });
+
 
   const [image, setImage] = useState(null);
   const [error, setError] = useState(null);
@@ -140,15 +143,28 @@ export const EventsView = () => {
                 required
               />
             </div>
+            {/* CITY */}
+            <div className="mb-3">
+              <label className="form-label">City</label>
+              <input
+                className="form-control rounded-pill px-3"
+                name="city"
+                value={form.city}
+                onChange={handleChange}
+                placeholder="e.g. Bogotá"
+                required
+              />
+            </div>
 
             {/* LOCATION + MAP */}
             <div className="mb-3">
-              <label className="form-label">Location</label>
+              <label className="form-label">Exact address / Location</label>
               <input
                 className="form-control rounded-pill px-3"
                 name="location"
                 value={form.location}
                 onChange={handleChange}
+                placeholder="Street, neighborhood, reference point"
                 required
               />
 
@@ -160,7 +176,7 @@ export const EventsView = () => {
                     height="180"
                     className="rounded border"
                     src={`https://www.google.com/maps?q=${encodeURIComponent(
-                      form.location
+                      `${form.location}, ${form.city}`
                     )}&output=embed`}
                   />
                 </div>
@@ -177,6 +193,19 @@ export const EventsView = () => {
                 value={form.event_date}
                 onChange={handleChange}
                 min={today}
+                required
+              />
+            </div>
+
+            {/* EVENT TIME */}
+            <div className="mb-3">
+              <label className="form-label">Event time</label>
+              <input
+                type="time"
+                className="form-control rounded-pill px-3"
+                name="event_time"
+                value={form.event_time}
+                onChange={handleChange}
                 required
               />
             </div>

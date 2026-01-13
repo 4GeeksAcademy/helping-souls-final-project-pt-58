@@ -1,5 +1,5 @@
 from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy import String, Boolean, ForeignKey, Date
+from sqlalchemy import String, Boolean, ForeignKey, Date, Time
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from datetime import date
 
@@ -133,35 +133,38 @@ class Donations(db.Model):
             'amount': self.amount
         }
     
+
+
 class Events(db.Model):
-    __tablename__='events'
+    __tablename__ = "events"
 
-    eventID: Mapped[int]=mapped_column(primary_key=True)
-    name: Mapped[str]=mapped_column(String(120), nullable=False)
-    organizerID: Mapped[int]=mapped_column(ForeignKey('organizer.organizerID'), nullable=False)
-    event_date: Mapped[date]=mapped_column(Date, nullable=False)
-    category: Mapped[str]=mapped_column(String(120), nullable=False)
-    description: Mapped[str]=mapped_column(String(320), nullable=False)
-    location: Mapped[str]=mapped_column(String(200), nullable=False)
-    max_volunteers: Mapped[int]=mapped_column(nullable=False)
-    #review: Mapped[str]=mapped_column(String(200), nullable=True)
-    image: Mapped[str]=mapped_column(String(800), nullable=True)
+    eventID = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(120), nullable=False)
+    organizerID = db.Column(db.Integer, db.ForeignKey("organizer.organizerID"), nullable=False)
 
-    comments: Mapped['Event_Comments']=relationship('Event_Comments', lazy=True, backref='event')
-    inscriptions: Mapped['Inscription']=relationship('Inscription', lazy=True, backref='event')
+    event_date = db.Column(db.Date, nullable=False)
+    event_time = db.Column(Time, nullable=True)   
+    city = db.Column(db.String(120), nullable=True)  
+
+    location = db.Column(db.String(200), nullable=False)
+    category = db.Column(db.String(120), nullable=False)
+    description = db.Column(db.String(320), nullable=False)
+    max_volunteers = db.Column(db.Integer, nullable=False)
+    image = db.Column(db.String(800), nullable=True)
 
     def serialize(self):
-        return{
-           'eventID': self.eventID,
-           'name': self.name,
-           'organizerID': self.organizerID,
-           'event_date': self.event_date,
-           'category': self.category,
-           'description': self.description,
-           'location': self.location,
-           'max_volunteers': self.max_volunteers,
-           #'review': self.review,
-           'image' : self.image,
+        return {
+            "eventID": self.eventID,
+            "name": self.name,
+            "organizerID": self.organizerID,
+            "event_date": self.event_date.isoformat(),
+            "event_time": self.event_time.strftime("%H:%M") if self.event_time else None,
+            "city": self.city,
+            "location": self.location,
+            "category": self.category,
+            "description": self.description,
+            "max_volunteers": self.max_volunteers,
+            "image": self.image,
         }
 
 class ContactMessage(db.Model):

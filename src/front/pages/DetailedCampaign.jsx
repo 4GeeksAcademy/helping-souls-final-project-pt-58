@@ -101,107 +101,162 @@ export const DetailedCampaign = () => {
   }
 
   return (
-    <div className="container mt-4">
-      <button
-        className="btn btn-outline-secondary mb-4"
-        onClick={() => navigate("/campaignsboard")}
-      >
-        ← Back to campaigns
-      </button>
+  <div className="container mt-4">
+    {/* BACK */}
+    <button
+      className="btn btn-outline-secondary mb-4"
+      onClick={() => navigate("/campaignsboard")}
+    >
+      ← Back to campaigns
+    </button>
 
-      <div className="card shadow">
-        <div className="card-body">
-          {/* Title */}
-          <div className="d-flex justify-content-between align-items-start">
-            <h2 className="card-title mb-2">{campaign.name}</h2>
+    <div className="card shadow-sm">
+      <div className="card-body">
 
-            {store.user?.role === "organizer" && (
-              <button
-                className="btn btn-sm btn-outline-primary"
-                onClick={() => navigate(`/campaigns/${id}/edit`)}
-                title="Edit campaign"
-              >
-                ✏️ Edit
-              </button>
-            )}
-          </div>
-          {campaign.organizerID && (
-            <div className="mb-2">
-              <small className="text-muted">
-                Organizer:{" "}
-                <Link to={`/profile/organizer/${campaign.organizerID}`} className="text-decoration-none">
-                  {campaign.organizer_name || "View organizer profile"}
-                </Link>
-              </small>
-            </div>
-          )}
+        {/* TITLE + ACTIONS */}
+        <div className="d-flex justify-content-between align-items-start mb-2">
+          <h2 className="mb-0">{campaign.name}</h2>
 
-          {/* CATEGORY */}
-          {campaign.category && (
-            <div className="mb-3">
-              <span className="badge bg-success">
-                {campaign.category}
-              </span>
-            </div>
-          )}
-
-          {/* IMAGE */}
-          {campaign.image && (
-            <div className="mb-4">
-              <img
-                src={campaign.image.replace("/upload/", "/upload/f_auto,q_auto,w_800/")}
-                alt={campaign.name}
-                className="img-fluid rounded shadow-sm"
-                style={{
-                  maxWidth: "600px",
-                  width: "100%",
-                  height: "auto"
-                }}
-              />
-            </div>
-          )}
-
-
-          <p><strong>Date:</strong> {campaign.event_date}</p>
-          <p><strong>Location:</strong> {campaign.location}</p>
-          <p><strong>Max volunteers:</strong> {campaign.max_volunteers ?? "Unlimited"}</p>
-
-          {campaign.description && <p>{campaign.description}</p>}
-
-          {store.user?.role === "organizer" && <EventInscriptions eventId={id} />}
-
-          {store.user?.role === "volunteer" && (
-            !isInscribed ? (
-              <div className="d-flex gap-2">
-                <button
-                  className="btn btn-primary"
-                  onClick={() => navigate(`/campaigns/${id}/apply`)}
-                >
-                  Register
-                </button>
-
-                {!isInterested ? (
-                  <button
-                    className="btn btn-outline-warning"
-                    onClick={handleInterest}
-                    disabled={interestLoading}
-                  >
-                    {interestLoading ? "Saving..." : "Save for later"}
-                  </button>
-                ) : (
-                  <span className="badge bg-warning text-dark">
-                    Saved in My Interests
-                  </span>
-                )}
-              </div>
-            ) : (
-              <div className="alert alert-success">
-                You are already registered — Status: {inscription.status}
-              </div>
-            )
+          {store.user?.role === "organizer" && (
+            <button
+              className="btn btn-sm btn-outline-primary"
+              onClick={() => navigate(`/campaigns/${id}/edit`)}
+              title="Edit campaign"
+            >
+              ✏️ Edit
+            </button>
           )}
         </div>
+
+        {/* ORGANIZER */}
+        {campaign.organizerID && (
+          <small className="text-muted d-block mb-2">
+            Organizer:{" "}
+            <Link
+              to={`/profile/organizer/${campaign.organizerID}`}
+              className="text-decoration-none"
+            >
+              {campaign.organizer_name || "View organizer profile"}
+            </Link>
+          </small>
+        )}
+
+        {/* CATEGORY */}
+        {campaign.category && (
+          <span className="badge bg-success mb-3">
+            {campaign.category}
+          </span>
+        )}
+
+        {/* IMAGE */}
+        {campaign.image && (
+          <div className="my-4">
+            <img
+              src={campaign.image.replace(
+                "/upload/",
+                "/upload/f_auto,q_auto,w_1000/"
+              )}
+              alt={campaign.name}
+              className="img-fluid rounded shadow-sm"
+              style={{
+                width: "100%",
+                maxHeight: "420px",
+                objectFit: "cover"
+              }}
+            />
+          </div>
+        )}
+
+        {/* INFO GRID */}
+        <div className="row g-3 mb-4">
+          <div className="col-md-3 col-6">
+            <div className="border rounded p-3 h-100">
+              <small className="text-muted d-block">Date</small>
+              <strong>{campaign.event_date}</strong>
+            </div>
+          </div>
+
+          <div className="col-md-3 col-6">
+            <div className="border rounded p-3 h-100">
+              <small className="text-muted d-block">Time</small>
+              <strong>{campaign.event_time || "—"}</strong>
+            </div>
+          </div>
+
+          <div className="col-md-3 col-6">
+            <div className="border rounded p-3 h-100">
+              <small className="text-muted d-block">City</small>
+              <strong>{campaign.city || "—"}</strong>
+            </div>
+          </div>
+
+          <div className="col-md-3 col-6">
+            <div className="border rounded p-3 h-100">
+              <small className="text-muted d-block">Max volunteers</small>
+              <strong>{campaign.max_volunteers ?? "Unlimited"}</strong>
+            </div>
+          </div>
+        </div>
+
+        {/* LOCATION */}
+        <div className="mb-4">
+          <small className="text-muted d-block">Location</small>
+          <strong>{campaign.location}</strong>
+        </div>
+
+        {/* DESCRIPTION */}
+        {campaign.description && (
+          <div className="mb-4">
+            <h5 className="mb-2">About this campaign</h5>
+            <p className="text-muted mb-0">
+              {campaign.description}
+            </p>
+          </div>
+        )}
+
+        <hr />
+
+        {/* ORGANIZER VIEW */}
+        {store.user?.role === "organizer" && (
+          <EventInscriptions eventId={id} />
+        )}
+
+        {/* VOLUNTEER ACTIONS */}
+        {store.user?.role === "volunteer" && (
+          !isInscribed ? (
+            <div className="d-flex gap-2 flex-wrap">
+              <button
+                className="btn btn-primary"
+                onClick={() => navigate(`/campaigns/${id}/apply`)}
+              >
+                Register
+              </button>
+
+              {!isInterested ? (
+                <button
+                  className="btn btn-outline-warning"
+                  onClick={handleInterest}
+                  disabled={interestLoading}
+                >
+                  {interestLoading ? "Saving..." : "Save for later"}
+                </button>
+              ) : (
+                <span className="badge bg-warning text-dark align-self-center">
+                  Saved in My Interests
+                </span>
+              )}
+            </div>
+          ) : (
+            <div className="alert alert-success mt-3">
+              You are already registered — Status: {inscription.status}
+            </div>
+          )
+        )}
       </div>
+      
     </div>
-  );
+  </div>
+  
+);
+
 };
