@@ -478,3 +478,15 @@ body {
   opacity: 1;
   transform: translateY(0);
 }
+
+
+.btn-delete-danger {
+  background-color: #dc3545 !important; /* rojo Bootstrap real */
+  border-color: #dc3545 !important;
+  color: #fff !important;
+}
+
+.btn-delete-danger:hover {
+  background-color: #bb2d3b !important;
+  border-color: #b02a37 !important;
+}

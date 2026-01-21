@@ -87,7 +87,7 @@ export const CampaignsBoard = () => {
 
   const [params] = useSearchParams();
   const category = (params.get("category") || "").toLowerCase();
-  const location = (params.get("location") || "").toLowerCase();
+  const city = (params.get("city") || "").toLowerCase();
   const from = params.get("from") || "";
   const to = params.get("to") || "";
 
@@ -97,6 +97,16 @@ export const CampaignsBoard = () => {
   const toDate = (s) => (s ? new Date(`${s}T00:00:00`) : null);
   const fromDate = toDate(from);
   const toDateObj = toDate(to);
+
+  const categoryStyles = {
+    environmental: { bg: "#9ECAD6", color: "#fff" }, // celeste claro
+    animal: { bg: "#748DAE", color: "#fff" },        // azul medio
+    humanitarian: { bg: "#F5CBCB", color: "#000" },  // rosa
+    default: { bg: "#FFEAEA", color: "#000" },       // rosa muy claro
+  };
+
+  const getCategoryStyle = (category = "") =>
+    categoryStyles[category.toLowerCase()] || categoryStyles.default;
 
   /* Fetch campaigns */
   useEffect(() => {
@@ -138,8 +148,9 @@ export const CampaignsBoard = () => {
 
   /* Filters logic */
   const filteredCampaigns = campaigns.filter((c) => {
-    if (category && !(c.category || "").toLowerCase().includes(category)) return false;
-    if (location && !(c.location || "").toLowerCase().includes(location)) return false;
+    if (category && !(c.category || "").toLowerCase().includes(category))
+      return false;
+    if (city && !(c.city || "").toLowerCase().includes(city)) return false;
 
     if (fromDate || toDateObj) {
       if (!c.event_date) return false;
@@ -159,7 +170,7 @@ export const CampaignsBoard = () => {
   }
 
   /* ===============================
-     NOT AUTHORIZED (UNCHANGED)
+     NOT AUTHORIZED
   ================================ */
   if (!isAuthorized) {
     return (
@@ -260,60 +271,83 @@ export const CampaignsBoard = () => {
 
       {/* Campaign cards */}
       <div className="d-flex flex-column gap-3 mt-4">
-        {filteredCampaigns.map((campaign) => (
-          <div
-            key={campaign.eventID}
-            className="d-flex align-items-center p-3"
-            style={{
-              backgroundColor: "#fff",
-              borderRadius: "18px",
-              boxShadow: "0 4px 12px rgba(0,0,0,0.06)",
-            }}
-          >
-            <img
-              src={
-                campaign.image
-                  ? campaign.image.replace(
+        {filteredCampaigns.map((campaign) => {
+          const isOwnCampaign = storeUser?.userID === campaign.organizerID; // NUEVO
+
+          return (
+            <div
+              key={campaign.eventID}
+              className="d-flex align-items-center p-3"
+              style={{
+                backgroundColor: "#fff",
+                borderRadius: "18px",
+                boxShadow: "0 4px 12px rgba(0,0,0,0.06)",
+                position: "relative",
+              }}
+            >
+              {/* Badge para campaña propia */}
+              {isOwnCampaign && (
+                <span
+                  style={{
+                    position: "absolute",
+                    top: "10px",
+                    right: "10px",
+                    backgroundColor: "#2E7D32", 
+                    color: "#fff",               
+                    padding: "4px 8px",
+                    borderRadius: "12px",
+                    fontSize: "0.75rem",
+                    fontWeight: 600,
+                  }}
+                >
+                  Your campaign
+                </span>
+              )}
+
+
+              <img
+                src={
+                  campaign.image
+                    ? campaign.image.replace(
                       "/upload/",
                       "/upload/f_auto,q_auto,w_120,h_120,c_fill/"
                     )
-                  : "https://placehold.co/120"
-              }
-              alt={campaign.name}
-              style={{
-                width: "90px",
-                height: "90px",
-                borderRadius: "50%",
-                objectFit: "cover",
-                marginRight: "1rem",
-              }}
-            />
-
-            <div className="flex-grow-1">
-              <h5 className="mb-1">{campaign.name}</h5>
-              <small className="text-muted d-block">📍 {campaign.location}</small>
-              <small className="text-muted d-block">📅 {campaign.event_date}</small>
-
-              {/* ✅ ADD: countdown (small text, no layout break) */}
-              {campaign.event_date && <Countdown eventDate={campaign.event_date} />}
-            </div>
-
-            {/* ✅ ADD: Google Calendar button + keep View button */}
-            <div className="d-flex align-items-center gap-2">
-              <a
-                href={buildGoogleCalendarUrl(campaign)}
-                target="_blank"
-                rel="noreferrer"
-                className="btn"
+                    : "https://placehold.co/120"
+                }
+                alt={campaign.name}
                 style={{
-                  backgroundColor: "#fff",
-                  color: "#748DAE",
-                  borderRadius: "18px",
-                  border: "1px solid #748DAE",
+                  width: "90px",
+                  height: "90px",
+                  borderRadius: "50%",
+                  objectFit: "cover",
+                  marginRight: "1rem",
                 }}
-              >
-                Google Calendar
-              </a>
+              />
+
+              <div className="flex-grow-1">
+                <div className="d-flex align-items-center gap-2 mb-1">
+                  <h5 className="mb-0">{campaign.name}</h5>
+
+                  <span
+                    style={{
+                      backgroundColor: getCategoryStyle(campaign.category).bg,
+                      color: getCategoryStyle(campaign.category).color,
+                      padding: "2px 10px",
+                      borderRadius: "12px",
+                      fontSize: "0.75rem",
+                      fontWeight: 500,
+                      whiteSpace: "nowrap",
+                    }}
+                  >
+                    {campaign.category}
+                  </span>
+                </div>
+
+                <div className="text-muted" style={{ fontSize: "0.85rem" }}>
+                  <div>📍 {campaign.city}</div>
+                  <div>📅 {campaign.event_date}</div>
+                </div>
+              </div>
 
               <button
                 className="btn"
@@ -323,8 +357,8 @@ export const CampaignsBoard = () => {
                 View
               </button>
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
     </div>
   );

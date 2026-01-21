@@ -86,6 +86,8 @@ export const DetailedCampaign = () => {
   const [error, setError] = useState(null);
   const [interestLoading, setInterestLoading] = useState(false);
 
+  const [isWrongOrganizer, setIsWrongOrganizer] = useState(false); // NUEVO
+
   useEffect(() => {
     if (!store?.token || !store?.isAuth) {
       navigate("/login");
@@ -114,9 +116,15 @@ export const DetailedCampaign = () => {
         const campaignData = await campaignRes.json();
         setCampaign(campaignData.event);
 
-        // ===== VOLUNTEER ONLY: INSCRIPTION + INTEREST =====
-        if (store?.user?.role === "volunteer") {
-          // INSCRIPTION
+        // --- VALIDACIÓN DEL ORGANIZADOR ---
+        if (
+          store.user?.role === "organizer" &&
+          store.user.userID !== campaignData.event.organizerID
+        ) {
+          setIsWrongOrganizer(true);
+        }
+
+        if (store.user?.role === "volunteer") {
           const inscriptionRes = await fetch(
             `${backendUrl}/api/events/${id}/inscription`,
             {
@@ -201,12 +209,12 @@ export const DetailedCampaign = () => {
 
   if (loading) return <p className="text-center mt-4">Loading campaign...</p>;
 
-  if (error || !campaign) {
+  if (error) {
     return (
       <div className="container mt-5 text-center">
-        <div className="alert alert-danger">{error || "Campaign not found"}</div>
+        <div className="alert alert-danger">{error}</div>
         <button
-          className="btn btn-secondary"
+          className="btn btn-secondary mt-3"
           onClick={() => navigate("/campaignsboard")}
         >
           Back to campaigns
@@ -223,160 +231,8 @@ export const DetailedCampaign = () => {
   });
 
   return (
-  <div className="container mt-4">
-    {/* BACK */}
-    <button
-      className="btn btn-outline-secondary mb-4"
-      onClick={() => navigate("/campaignsboard")}
-    >
-      ← Back to campaigns
-    </button>
-
-    <div className="card shadow-sm">
-      <div className="card-body">
-
-        {/* TITLE + ACTIONS */}
-        <div className="d-flex justify-content-between align-items-start mb-2">
-          <h2 className="mb-0">{campaign.name}</h2>
-
-          {store.user?.role === "organizer" && (
-            <button
-              className="btn btn-sm btn-outline-primary"
-              onClick={() => navigate(`/campaigns/${id}/edit`)}
-              title="Edit campaign"
-            >
-              ✏️ Edit
-            </button>
-          )}
-        </div>
-
-        {/* ORGANIZER */}
-        {campaign.organizerID && (
-          <small className="text-muted d-block mb-2">
-            Organizer:{" "}
-            <Link
-              to={`/profile/organizer/${campaign.organizerID}`}
-              className="text-decoration-none"
-            >
-              {campaign.organizer_name || "View organizer profile"}
-            </Link>
-          </small>
-        )}
-
-        {/* CATEGORY */}
-        {campaign.category && (
-          <span className="badge bg-success mb-3">
-            {campaign.category}
-          </span>
-        )}
-
-        {/* IMAGE */}
-        {campaign.image && (
-          <div className="my-4">
-            <img
-              src={campaign.image.replace(
-                "/upload/",
-                "/upload/f_auto,q_auto,w_1000/"
-              )}
-              alt={campaign.name}
-              className="img-fluid rounded shadow-sm"
-              style={{
-                width: "100%",
-                maxHeight: "420px",
-                objectFit: "cover"
-              }}
-            />
-          </div>
-        )}
-
-        {/* INFO GRID */}
-        <div className="row g-3 mb-4">
-          <div className="col-md-3 col-6">
-            <div className="border rounded p-3 h-100">
-              <small className="text-muted d-block">Date</small>
-              <strong>{campaign.event_date}</strong>
-            </div>
-          </div>
-
-          <div className="col-md-3 col-6">
-            <div className="border rounded p-3 h-100">
-              <small className="text-muted d-block">Time</small>
-              <strong>{campaign.event_time || "—"}</strong>
-            </div>
-          </div>
-
-          <div className="col-md-3 col-6">
-            <div className="border rounded p-3 h-100">
-              <small className="text-muted d-block">City</small>
-              <strong>{campaign.city || "—"}</strong>
-            </div>
-          </div>
-
-          <div className="col-md-3 col-6">
-            <div className="border rounded p-3 h-100">
-              <small className="text-muted d-block">Max volunteers</small>
-              <strong>{campaign.max_volunteers ?? "Unlimited"}</strong>
-            </div>
-          </div>
-        </div>
-
-        {/* LOCATION */}
-        <div className="mb-4">
-          <small className="text-muted d-block">Location</small>
-          <strong>{campaign.location}</strong>
-        </div>
-
-        {/* DESCRIPTION */}
-        {campaign.description && (
-          <div className="mb-4">
-            <h5 className="mb-2">About this campaign</h5>
-            <p className="text-muted mb-0">
-              {campaign.description}
-            </p>
-          </div>
-        )}
-
-        <hr />
-
-        {/* ORGANIZER VIEW */}
-        {store.user?.role === "organizer" && (
-          <EventInscriptions eventId={id} />
-        )}
-
-        {/* VOLUNTEER ACTIONS */}
-        {store.user?.role === "volunteer" && (
-          !isInscribed ? (
-            <div className="d-flex gap-2 flex-wrap">
-              <button
-                className="btn btn-primary"
-                onClick={() => navigate(`/campaigns/${id}/apply`)}
-              >
-                Register
-              </button>
-
-              {!isInterested ? (
-                <button
-                  className="btn btn-outline-warning"
-                  onClick={handleInterest}
-                  disabled={interestLoading}
-                >
-                  {interestLoading ? "Saving..." : "Save for later"}
-                </button>
-              ) : (
-                <span className="badge bg-warning text-dark align-self-center">
-                  Saved in My Interests
-                </span>
-              )}
-            </div>
-          ) : (
-            <div className="alert alert-success mt-3">
-              You are already registered — Status: {inscription.status}
-            </div>
-          )
-        )}
-      </div>
-      
     <div className="container mt-4">
+      {/* BACK */}
       <button
         className="btn btn-outline-secondary mb-4"
         onClick={() => navigate("/campaignsboard")}
@@ -384,93 +240,152 @@ export const DetailedCampaign = () => {
         ← Back to campaigns
       </button>
 
-      <div className="card shadow">
+      <div className="card shadow-sm">
         <div className="card-body">
-          <h2>{campaign.name}</h2>
+          {/* MENSAJE SI ORGANIZADOR DISTINTO */}
+          {isWrongOrganizer && (
+            <div className="alert alert-warning text-center">
+              You're not the organizer for this event
+            </div>
+          )}
 
-          <p>
-            <strong>Date:</strong> {campaign.event_date}
-          </p>
-          <p>
-            <strong>Location:</strong> {campaign.location}
-          </p>
+          {/* TITLE + ACTIONS */}
+          <div className="d-flex justify-content-between align-items-start mb-2">
+            <h2 className="mb-0">{campaign.name}</h2>
 
-          {/* VOLUNTEER: COUNTDOWN + CALENDAR */}
-          {store?.user?.role === "volunteer" && (
-            <>
-              <EventCountdown eventDateISO={campaign.event_date} />
+            {store.user?.role === "organizer" && !isWrongOrganizer && (
+              <button
+                className="btn btn-sm btn-outline-primary"
+                onClick={() => navigate(`/campaigns/${id}/edit`)}
+                title="Edit campaign"
+              >
+                ✏️ Edit
+              </button>
+            )}
+          </div>
 
-              {gcalUrl && (
-                <a
-                  className="btn btn-primary mt-2"
-                  href={gcalUrl}
-                  target="_blank"
-                  rel="noreferrer"
-                >
-                  Add to Google Calendar
-                </a>
-              )}
-            </>
+          {/* ORGANIZER */}
+          {campaign.organizerID && (
+            <small className="text-muted d-block mb-2">
+              Organizer:{" "}
+              <Link
+                to={`/profile/organizer/${campaign.organizerID}`}
+                className="text-decoration-none"
+              >
+                {campaign.organizer_name || "View organizer profile"}
+              </Link>
+            </small>
+          )}
+
+          {/* CATEGORY */}
+          {campaign.category && (
+            <span className="badge bg-success mb-3">{campaign.category}</span>
+          )}
+
+          {/* IMAGE */}
+          {campaign.image && (
+            <div className="my-4">
+              <img
+                src={campaign.image.replace(
+                  "/upload/",
+                  "/upload/f_auto,q_auto,w_1000/"
+                )}
+                alt={campaign.name}
+                className="img-fluid rounded shadow-sm"
+                style={{
+                  width: "100%",
+                  maxHeight: "420px",
+                  objectFit: "cover",
+                }}
+              />
+            </div>
+          )}
+
+          {/* INFO GRID */}
+          <div className="row g-3 mb-4">
+            <div className="col-md-3 col-6">
+              <div className="border rounded p-3 h-100">
+                <small className="text-muted d-block">Date</small>
+                <strong>{campaign.event_date}</strong>
+              </div>
+            </div>
+
+            <div className="col-md-3 col-6">
+              <div className="border rounded p-3 h-100">
+                <small className="text-muted d-block">Time</small>
+                <strong>{campaign.event_time || "—"}</strong>
+              </div>
+            </div>
+
+            <div className="col-md-3 col-6">
+              <div className="border rounded p-3 h-100">
+                <small className="text-muted d-block">City</small>
+                <strong>{campaign.city || "—"}</strong>
+              </div>
+            </div>
+
+            <div className="col-md-3 col-6">
+              <div className="border rounded p-3 h-100">
+                <small className="text-muted d-block">Max volunteers</small>
+                <strong>{campaign.max_volunteers ?? "Unlimited"}</strong>
+              </div>
+            </div>
+          </div>
+
+          {/* LOCATION */}
+          <div className="mb-4">
+            <small className="text-muted d-block">Location</small>
+            <strong>{campaign.location}</strong>
+          </div>
+
+          {/* DESCRIPTION */}
+          {campaign.description && (
+            <div className="mb-4">
+              <h5 className="mb-2">About this campaign</h5>
+              <p className="text-muted mb-0">{campaign.description}</p>
+            </div>
           )}
 
           <hr />
 
-          {/* ORGANIZER */}
-          {store?.user?.role === "organizer" && (
-            <>
-              <div className="alert alert-info">
-                You are the organizer of this campaign.
-              </div>
-              <EventInscriptions eventId={id} />
-            </>
+          {/* ORGANIZER VIEW */}
+          {store.user?.role === "organizer" && !isWrongOrganizer && (
+            <EventInscriptions eventId={id} />
           )}
 
           {/* VOLUNTEER ACTIONS */}
-          {store?.user?.role === "volunteer" && (
-            <>
-              {!isInscribed ? (
-                <div className="d-flex gap-2">
-                  <button
-                    className="btn btn-primary"
-                    onClick={() => navigate(`/campaigns/${id}/apply`)}
-                  >
-                    Register
-                  </button>
+          {store.user?.role === "volunteer" &&
+            (!isInscribed ? (
+              <div className="d-flex gap-2 flex-wrap">
+                <button
+                  className="btn btn-primary"
+                  onClick={() => navigate(`/campaigns/${id}/apply`)}
+                  disabled={isWrongOrganizer} // DESHABILITADO si es organizador incorrecto
+                >
+                  Register
+                </button>
 
-                  {!isInterested ? (
-                    <button
-                      className="btn btn-outline-warning"
-                      onClick={handleInterest}
-                      disabled={interestLoading}
-                    >
-                      {interestLoading ? "Saving..." : "Save for later"}
-                    </button>
-                  ) : (
-                    <span className="badge bg-warning text-dark">
-                      Saved in My Interests
-                    </span>
-                  )}
-                </div>
-              ) : (
-                <div className="alert alert-success">
-                  You are already registered
-                </div>
-              )}
-            </>
-          )}
+                {!isInterested ? (
+                  <button
+                    className="btn btn-outline-warning"
+                    onClick={handleInterest}
+                    disabled={interestLoading || isWrongOrganizer} // DESHABILITADO si organizador incorrecto
+                  >
+                    {interestLoading ? "Saving..." : "Save for later"}
+                  </button>
+                ) : (
+                  <span className="badge bg-warning text-dark align-self-center">
+                    Saved in My Interests
+                  </span>
+                )}
+              </div>
+            ) : (
+              <div className="alert alert-success mt-3">
+                You are already registered — Status: {inscription.status}
+              </div>
+            ))}
         </div>
       </div>
-
-      {/* ✅ MAPA ABAJO (sin romper diseño) */}
-      {campaign?.location && (
-        <div className="mt-4">
-          <h5 className="mb-2">Ubicación en el mapa</h5>
-          <GoogleMapEmbed location={campaign.location} height={320} />
-        </div>
-      )}
     </div>
-  </div>
-  
-);
-
+  );
 };

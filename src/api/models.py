@@ -145,21 +145,9 @@ class Events(db.Model):
 
     location = db.Column(db.String(200), nullable=False)
     category = db.Column(db.String(120), nullable=False)
-    description = db.Column(db.String(320), nullable=False)
+    description = db.Column(db.Text, nullable=False)
     max_volunteers = db.Column(db.Integer, nullable=False)
-    image = db.Column(db.String(800), nullable=True)
-    eventID: Mapped[int] = mapped_column(primary_key=True)
-    name: Mapped[str] = mapped_column(String(120), nullable=False)
-    organizerID: Mapped[int] = mapped_column(ForeignKey("organizer.organizerID"), nullable=False)
-    event_date: Mapped[date] = mapped_column(Date, nullable=False)
-    category: Mapped[str] = mapped_column(String(120), nullable=False)
-    description: Mapped[str] = mapped_column(String(320), nullable=False)
-    location: Mapped[str] = mapped_column(String(200), nullable=False)
-    max_volunteers: Mapped[int] = mapped_column(nullable=False)
-    image: Mapped[str] = mapped_column(String(800), nullable=True)
-
-    comments: Mapped["Event_Comments"] = relationship("Event_Comments", lazy=True, backref="event")
-    inscriptions: Mapped["Inscription"] = relationship("Inscription", lazy=True, backref="event")
+    image = db.Column(db.Text, nullable=True)
 
     def serialize(self):
         return {

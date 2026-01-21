@@ -10,6 +10,8 @@ export const EditCampaign = () => {
   const [form, setForm] = useState({
     name: "",
     event_date: "",
+    event_time: "",
+    city: "",
     location: "",
     category: "",
     max_volunteers: "",
@@ -17,6 +19,8 @@ export const EditCampaign = () => {
   });
 
   const [loading, setLoading] = useState(true);
+  const [showCategoryModal, setShowCategoryModal] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
 
   // Guard: solo organizer
   useEffect(() => {
@@ -46,7 +50,9 @@ export const EditCampaign = () => {
 
         setForm({
           name: ev.name || "",
-          event_date: ev.event_date || "", // viene como "YYYY-MM-DD"
+          event_date: ev.event_date || "",
+          event_time: ev.event_time || "",
+          city: ev.city || "",
           location: ev.location || "",
           category: ev.category || "",
           max_volunteers: ev.max_volunteers ?? "",
@@ -94,7 +100,6 @@ export const EditCampaign = () => {
         return;
       }
 
-      // volver al detalle
       navigate(`/campaigns/${id}`);
     } catch (err) {
       console.error(err);
@@ -102,16 +107,36 @@ export const EditCampaign = () => {
     }
   };
 
+  const handleDelete = async () => {
+    try {
+      const backendUrl = import.meta.env.VITE_BACKEND_URL;
+
+      const res = await fetch(`${backendUrl}/api/events/${id}`, {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${store.token}`
+        }
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        alert(data.msg || "Error deleting campaign");
+        return;
+      }
+
+      setShowDeleteModal(false);
+      navigate("/campaignsboard");
+    } catch (err) {
+      console.error(err);
+      alert("Error deleting campaign");
+    }
+  };
+
   if (loading) return <p className="text-center mt-4">Loading edit form...</p>;
 
   return (
     <div className="container mt-4">
-      <button
-        className="btn btn-outline-secondary mb-3"
-        onClick={() => navigate(-1)}
-      >
-        ← Back
-      </button>
 
       <div className="card shadow">
         <div className="card-body">
@@ -142,6 +167,29 @@ export const EditCampaign = () => {
             </div>
 
             <div className="mb-2">
+              <label className="form-label">Time</label>
+              <input
+                type="time"
+                className="form-control"
+                name="event_time"
+                value={form.event_time}
+                onChange={handleChange}
+                required
+              />
+            </div>
+
+            <div className="mb-2">
+              <label className="form-label">City</label>
+              <input
+                className="form-control"
+                name="city"
+                value={form.city}
+                onChange={handleChange}
+                required
+              />
+            </div>
+
+            <div className="mb-2">
               <label className="form-label">Location</label>
               <input
                 className="form-control"
@@ -152,16 +200,56 @@ export const EditCampaign = () => {
               />
             </div>
 
-            <div className="mb-2">
+            {/* CATEGORY */}
+            <div className="mb-3">
               <label className="form-label">Category</label>
-              <input
-                className="form-control"
-                name="category"
-                value={form.category}
-                onChange={handleChange}
-                required
-              />
+              <button
+                type="button"
+                className="form-control rounded-pill text-start px-3"
+                onClick={() => setShowCategoryModal(true)}
+              >
+                {form.category || "Select category"}
+              </button>
             </div>
+
+            {/* CATEGORY MODAL */}
+            {showCategoryModal && (
+              <div className="modal fade show d-block" tabIndex="-1">
+                <div className="modal-dialog modal-dialog-centered modal-sm">
+                  <div className="modal-content rounded-3 shadow">
+                    {/* Header */}
+                    <div className="modal-header border-0 pb-1">
+                      <h5 className="modal-title fw-semibold fs-6">
+                        Select a category
+                      </h5>
+                      <button
+                        className="btn-close btn-sm"
+                        onClick={() => setShowCategoryModal(false)}
+                      />
+                    </div>
+
+                    {/* Body */}
+                    <div className="modal-body pt-2 pb-3 p-2">
+                      <div className="d-grid gap-2">
+                        {["Animals", "Environment", "Seniors", "Children", "Collection"].map(cat => (
+                          <button
+                            key={cat}
+                            type="button"
+                            className="btn btn-outline-primary btn-sm rounded-pill fw-medium text-start"
+                            onClick={() => {
+                              setForm(prev => ({ ...prev, category: cat }));
+                              setShowCategoryModal(false);
+                            }}
+                          >
+                            {cat}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
 
             <div className="mb-2">
               <label className="form-label">Max volunteers</label>
@@ -186,10 +274,69 @@ export const EditCampaign = () => {
               />
             </div>
 
-            <button className="btn btn-primary">Save changes</button>
+            <div className="d-flex justify-content-between align-items-center mt-4">
+              <button
+                type="submit"
+                className="btn btn-primary px-4"
+              >
+                Save changes
+              </button>
+
+              <button
+                type="button"
+                className="btn btn-delete-danger btn-sm px-3"
+                onClick={() => setShowDeleteModal(true)}
+              >
+                Delete campaign
+              </button>
+            </div>
           </form>
         </div>
       </div>
+
+      {/* DELETE CONFIRMATION MODAL */}
+      {showDeleteModal && (
+        <div className="modal fade show d-block" tabIndex="-1">
+          <div className="modal-dialog modal-dialog-centered">
+            <div className="modal-content rounded-4 border border-danger">
+              <div className="modal-header">
+                <h5 className="modal-title text-danger">
+                  ⚠️ Delete campaign
+                </h5>
+                <button
+                  className="btn-close"
+                  onClick={() => setShowDeleteModal(false)}
+                />
+              </div>
+
+              <div className="modal-body">
+                <p className="fw-semibold">
+                  This action is <span className="text-danger">irreversible</span>.
+                </p>
+                <p>
+                  Deleting this campaign will permanently remove it and all its data.
+                </p>
+              </div>
+
+              <div className="modal-footer">
+                <button
+                  className="btn btn-outline-secondary"
+                  onClick={() => setShowDeleteModal(false)}
+                >
+                  Cancel
+                </button>
+
+                <button
+                  className="btn btn-delete-danger"
+                  onClick={handleDelete}
+                >
+                  Yes, delete
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
