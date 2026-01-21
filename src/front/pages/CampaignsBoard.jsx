@@ -1,6 +1,80 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { EventFilters } from "../components/EventFilters";
+
+/* ===============================
+   ADD: Countdown + Google Calendar helpers
+================================ */
+
+function formatCountdown(ms) {
+  if (!Number.isFinite(ms)) return "";
+  if (ms <= 0) return "Event started";
+
+  const totalSeconds = Math.floor(ms / 1000);
+  const days = Math.floor(totalSeconds / 86400);
+  const hours = Math.floor((totalSeconds % 86400) / 3600);
+  const minutes = Math.floor((totalSeconds % 3600) / 60);
+  const seconds = totalSeconds % 60;
+
+  const pad = (n) => String(n).padStart(2, "0");
+
+  if (days > 0) return `${days}d ${hours}h ${minutes}m ${pad(seconds)}s`;
+  if (hours > 0) return `${hours}h ${minutes}m ${pad(seconds)}s`;
+  return `${minutes}m ${pad(seconds)}s`;
+}
+
+function Countdown({ eventDate }) {
+  // eventDate can be "YYYY-MM-DD" or ISO
+  const target = useMemo(() => new Date(eventDate).getTime(), [eventDate]);
+  const [now, setNow] = useState(Date.now());
+
+  useEffect(() => {
+    const id = setInterval(() => setNow(Date.now()), 1000);
+    return () => clearInterval(id);
+  }, []);
+
+  return (
+    <small className="text-muted d-block" style={{ opacity: 0.9 }}>
+      ⏳ {formatCountdown(target - now)}
+    </small>
+  );
+}
+
+function toGoogleCalendarDate(dateLike) {
+  const d = new Date(dateLike);
+  const pad = (n) => String(n).padStart(2, "0");
+
+  // YYYYMMDDTHHMMSSZ (UTC)
+  const yyyy = d.getUTCFullYear();
+  const mm = pad(d.getUTCMonth() + 1);
+  const dd = pad(d.getUTCDate());
+
+  // If your date is "YYYY-MM-DD" (midnight), set a default time so it doesn’t become a weird 0-length event
+  const hh = pad(d.getUTCHours() || 17);
+  const mi = pad(d.getUTCMinutes() || 0);
+  const ss = pad(d.getUTCSeconds() || 0);
+
+  return `${yyyy}${mm}${dd}T${hh}${mi}${ss}Z`;
+}
+
+function buildGoogleCalendarUrl(campaign) {
+  const title = encodeURIComponent(campaign?.name || "Event");
+  const details = encodeURIComponent(campaign?.description || "");
+  const location = encodeURIComponent(campaign?.location || "");
+
+  const start = toGoogleCalendarDate(campaign?.event_date);
+
+  // End time: +2 hours default
+  const endDate = new Date(campaign?.event_date);
+  endDate.setHours(endDate.getHours() + 2);
+  const end = toGoogleCalendarDate(endDate);
+
+  return `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&details=${details}&location=${location}&dates=${start}/${end}`;
+}
+
+/* ===============================
+   COMPONENT
+================================ */
 
 export const CampaignsBoard = () => {
   const navigate = useNavigate();
@@ -90,6 +164,10 @@ export const CampaignsBoard = () => {
   });
 
   if (loading) return <p className="text-center mt-4">Loading campaigns...</p>;
+
+  if (error) {
+    return <p className="text-center mt-4 text-danger">{error}</p>;
+  }
 
   /* ===============================
      NOT AUTHORIZED
