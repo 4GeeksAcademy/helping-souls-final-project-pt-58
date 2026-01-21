@@ -338,6 +338,13 @@ export const DetailedCampaign = () => {
             <strong>{campaign.location}</strong>
           </div>
 
+          {/* MAP */}
+          {campaign.location && (
+            <div className="mb-4">
+              <GoogleMapEmbed location={`${campaign.location}, ${campaign.city || ""}`} />
+            </div>
+          )}
+
           {/* DESCRIPTION */}
           {campaign.description && (
             <div className="mb-4">
