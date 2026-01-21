@@ -258,8 +258,19 @@ export const EditCampaign = () => {
                 className="form-control"
                 name="max_volunteers"
                 value={form.max_volunteers}
-                onChange={handleChange}
                 min="0"
+                onChange={(e) => {
+                  const value = e.target.value;
+                  if (value === "" || Number(value) >= 0) {
+                    setForm(prev => ({ ...prev, max_volunteers: value }));
+                  }
+                }}
+                onKeyDown={(e) => {
+                  if (["-", "e", "E", "+"].includes(e.key)) {
+                    e.preventDefault();
+                  }
+                }}
+                onWheel={(e) => e.target.blur()}
               />
             </div>
 
