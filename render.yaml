@@ -16,7 +16,7 @@ services:
       - key: FLASK_APP_KEY
         sync: false
       - key: PYTHON_VERSION
-        value: 3.10.6
+        value: 3.13.5
       - key: FRONTEND_URL
         sync: false
       - key: STRIPE_SECRET_KEY
