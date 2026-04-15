@@ -272,7 +272,8 @@ export const CampaignsBoard = () => {
       {/* Campaign cards */}
       <div className="d-flex flex-column gap-3 mt-4">
         {filteredCampaigns.map((campaign) => {
-          const isOwnCampaign = storeUser?.userID === campaign.organizerID; // NUEVO
+          const isOwnCampaign =
+            Number(storeUser?.organizerID) === Number(campaign.organizerID);
 
           return (
             <div

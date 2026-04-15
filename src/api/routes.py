@@ -124,6 +124,8 @@ def login():
     # Serializar usuario y agregar rol
     user_data = user.serialize()
     user_data["role"] = role  # agregamos el rol aquí
+    user_data["organizerID"] = organizer.organizerID if organizer else None
+    user_data["volunteerID"] = volunteer.volunteerID if volunteer else None
 
     return jsonify({
         "msg": "Login successful",
