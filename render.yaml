@@ -5,7 +5,6 @@ services:
     region: ohio
     plan: free
     buildCommand: "./render_build.sh"
-    preDeployCommand: "pipenv run upgrade"
     startCommand: "gunicorn wsgi --chdir ./src/"
     envVars:
       - key: VITE_BASENAME
