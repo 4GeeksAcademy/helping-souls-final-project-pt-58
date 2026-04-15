@@ -55,7 +55,9 @@ ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg", "gif"}
 
 stripe.api_key = os.getenv("STRIPE_SECRET_KEY")
 
-FRONTEND_URL = "https://super-succotash-jjw565jwpv76fpqqp-3000.app.github.dev/"
+FRONTEND_URL = os.getenv("FRONTEND_URL", "http://localhost:3000/")
+if not FRONTEND_URL.endswith("/"):
+    FRONTEND_URL += "/"
 
 # =====================
 # HELPERS
