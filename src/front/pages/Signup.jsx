@@ -37,10 +37,24 @@ export const Signup = () => {
         body: JSON.stringify(payload),
       });
 
-      const data = await response.json();
+      const rawBody = await response.text();
+      let data = {};
+
+      try {
+        data = rawBody ? JSON.parse(rawBody) : {};
+      } catch {
+        data = { msg: rawBody || "Unexpected response from server" };
+      }
 
       if (!response.ok) {
-        alert(data.msg || "Signup failed");
+        console.error("Signup failed:", {
+          status: response.status,
+          body: rawBody,
+        });
+        alert(
+          data.msg ||
+            `Signup failed (HTTP ${response.status}). Check backend logs on Render.`
+        );
         return;
       }
 
