@@ -2,6 +2,7 @@
 This module takes care of starting the API Server, Loading the DB and Adding the endpoints
 """
 import os
+import traceback
 from flask import Flask, request, jsonify, url_for, send_from_directory
 from flask_migrate import Migrate
 from flask_swagger import swagger
@@ -49,6 +50,23 @@ app.register_blueprint(api, url_prefix='/api')
 @app.errorhandler(APIException)
 def handle_invalid_usage(error):
     return jsonify(error.to_dict()), error.status_code
+
+
+@app.errorhandler(Exception)
+def handle_unexpected_error(error):
+    """
+    Ensure API errors are always returned as JSON.
+    This avoids HTML 500 pages that break the frontend JSON parsing.
+    """
+    traceback.print_exc()
+
+    if request.path.startswith("/api/"):
+        return jsonify({
+            "msg": "Internal Server Error",
+            "error": str(error)
+        }), 500
+
+    raise error
 
 # generate sitemap with all your endpoints
 
