@@ -13,6 +13,7 @@ from api.admin import setup_admin
 from api.commands import setup_commands
 from flask_jwt_extended import JWTManager
 from flask_cors import CORS
+from sqlalchemy import inspect
 
 # from models import Person
 
@@ -34,6 +35,14 @@ else:
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 MIGRATE = Migrate(app, db, compare_type=True)
 db.init_app(app)
+
+# Ensure local SQLite databases have the expected schema during development.
+# This prevents runtime 500s like "no such table: user" when migrations were not run yet.
+if app.config['SQLALCHEMY_DATABASE_URI'].startswith('sqlite:///'):
+    with app.app_context():
+        inspector = inspect(db.engine)
+        if not inspector.has_table('user'):
+            db.create_all()
 
 # add the admin
 setup_admin(app)
