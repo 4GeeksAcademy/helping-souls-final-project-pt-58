@@ -76,6 +76,8 @@ export const DetailedCampaign = () => {
   const { store } = useGlobalReducer();
 
   const token = store?.token || localStorage.getItem("token");
+  const storedUser = localStorage.getItem("user");
+  const currentUser = store?.user || (storedUser ? JSON.parse(storedUser) : null);
 
   const [campaign, setCampaign] = useState(null);
   const [inscription, setInscription] = useState(null); // por si lo usas luego
@@ -118,13 +120,13 @@ export const DetailedCampaign = () => {
 
         // --- VALIDACIÓN DEL ORGANIZADOR ---
         if (
-          store.user?.role === "organizer" &&
-          store.user.userID !== campaignData.event.organizerID
+          currentUser?.role === "organizer" &&
+          Number(currentUser.organizerID) !== Number(campaignData.event.organizerID)
         ) {
           setIsWrongOrganizer(true);
         }
 
-        if (store.user?.role === "volunteer") {
+        if (currentUser?.role === "volunteer") {
           const inscriptionRes = await fetch(
             `${backendUrl}/api/events/${id}/inscription`,
             {
@@ -181,7 +183,7 @@ export const DetailedCampaign = () => {
     };
 
     fetchData();
-  }, [id, token, store?.user?.role, navigate]);
+  }, [id, token, currentUser?.role, currentUser?.organizerID, navigate]);
 
   // ===== HANDLER: SAVE INTEREST =====
   const handleInterest = async () => {
@@ -253,7 +255,7 @@ export const DetailedCampaign = () => {
           <div className="d-flex justify-content-between align-items-start mb-2">
             <h2 className="mb-0">{campaign.name}</h2>
 
-            {store.user?.role === "organizer" && !isWrongOrganizer && (
+            {currentUser?.role === "organizer" && !isWrongOrganizer && (
               <button
                 className="btn btn-sm btn-outline-primary"
                 onClick={() => navigate(`/campaigns/${id}/edit`)}
@@ -356,12 +358,12 @@ export const DetailedCampaign = () => {
           <hr />
 
           {/* ORGANIZER VIEW */}
-          {store.user?.role === "organizer" && !isWrongOrganizer && (
+          {currentUser?.role === "organizer" && !isWrongOrganizer && (
             <EventInscriptions eventId={id} />
           )}
 
           {/* VOLUNTEER ACTIONS */}
-          {store.user?.role === "volunteer" &&
+          {currentUser?.role === "volunteer" &&
             (!isInscribed ? (
               <div className="d-flex gap-2 flex-wrap">
                 <button
