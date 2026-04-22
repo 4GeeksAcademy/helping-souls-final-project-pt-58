@@ -4,7 +4,7 @@ This module takes care of starting the API Server, Loading the DB and Adding the
 import os
 import traceback
 from flask import Flask, request, jsonify, url_for, send_from_directory
-from flask_migrate import Migrate
+from flask_migrate import Migrate, upgrade
 from flask_swagger import swagger
 from api.utils import APIException, generate_sitemap
 from api.models import db
@@ -13,6 +13,7 @@ from api.admin import setup_admin
 from api.commands import setup_commands
 from flask_jwt_extended import JWTManager
 from flask_cors import CORS
+from sqlalchemy import inspect
 
 # from models import Person
 
@@ -34,6 +35,19 @@ else:
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 MIGRATE = Migrate(app, db, compare_type=True)
 db.init_app(app)
+
+# Ensure schema exists before serving requests.
+# First try Alembic migrations; if unavailable, fall back to SQLAlchemy metadata for SQLite.
+with app.app_context():
+    try:
+        upgrade()
+    except Exception:
+        if app.config['SQLALCHEMY_DATABASE_URI'].startswith('sqlite:///'):
+            inspector = inspect(db.engine)
+            if not inspector.has_table('user'):
+                db.create_all()
+        else:
+            raise
 
 # add the admin
 setup_admin(app)
