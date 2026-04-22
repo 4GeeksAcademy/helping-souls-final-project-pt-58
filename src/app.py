@@ -36,18 +36,13 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 MIGRATE = Migrate(app, db, compare_type=True)
 db.init_app(app)
 
-# Ensure schema exists before serving requests.
-# First try Alembic migrations; if unavailable, fall back to SQLAlchemy metadata for SQLite.
-with app.app_context():
-    try:
-        upgrade()
-    except Exception:
-        if app.config['SQLALCHEMY_DATABASE_URI'].startswith('sqlite:///'):
-            inspector = inspect(db.engine)
-            if not inspector.has_table('user'):
-                db.create_all()
-        else:
-            raise
+# Ensure local SQLite databases have the expected schema during development.
+# This prevents runtime 500s like "no such table: user" when migrations were not run yet.
+if app.config['SQLALCHEMY_DATABASE_URI'].startswith('sqlite:///'):
+    with app.app_context():
+        inspector = inspect(db.engine)
+        if not inspector.has_table('user'):
+            db.create_all()
 
 # add the admin
 setup_admin(app)
