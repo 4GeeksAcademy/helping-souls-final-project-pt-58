@@ -4,7 +4,7 @@ This module takes care of starting the API Server, Loading the DB and Adding the
 import os
 import traceback
 from flask import Flask, request, jsonify, url_for, send_from_directory
-from flask_migrate import Migrate
+from flask_migrate import Migrate, upgrade
 from flask_swagger import swagger
 from api.utils import APIException, generate_sitemap
 from api.models import db
